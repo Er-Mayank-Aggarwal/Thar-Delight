@@ -56,10 +56,10 @@ export default function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
           {/* Brand Column */}
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className="col-span-2 lg:col-span-1">
             <h2 className="font-serif text-2xl text-white mb-4">
               Thar Delight
             </h2>
@@ -96,7 +96,7 @@ export default function Footer() {
           </div>
 
           {/* Shop Links */}
-          <div>
+          <div className="col-span-1">
             <h4 className="font-serif text-lg text-white mb-5">Shop</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
@@ -113,7 +113,7 @@ export default function Footer() {
           </div>
 
           {/* Company Links */}
-          <div>
+          <div className="col-span-1">
             <h4 className="font-serif text-lg text-white mb-5">Company</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
@@ -130,7 +130,7 @@ export default function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div>
+          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
             <h4 className="font-serif text-lg text-white mb-5">Get in Touch</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-white/50">
@@ -153,9 +153,9 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-3 text-xs text-white/40 text-center sm:text-left">
             <p>© 2026 Thar Delight. All rights reserved.</p>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap justify-center items-center gap-4">
               {footerLinks.support.map((link) => (
                 <Link
                   key={link.name}
