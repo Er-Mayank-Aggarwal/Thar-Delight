@@ -38,13 +38,13 @@ export default function Footer() {
                 </p>
               </div>
               <div className="flex justify-center md:justify-end w-full md:w-auto">
-                <div className="flex w-full max-w-md items-stretch">
+                <div className="flex flex-col sm:flex-row w-full max-w-md items-stretch gap-3 sm:gap-0">
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-l-full text-white placeholder-white/40 focus:outline-none focus:border-brand-gold transition-colors leading-normal"
+                    className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold transition-colors leading-normal w-full"
                   />
-                  <button className="px-6 py-3 bg-brand-gold border border-transparent hover:bg-brand-gold-dark text-white font-semibold rounded-r-full transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/20 flex items-center justify-center gap-2">
+                  <button className="px-6 py-3 bg-brand-gold border border-transparent hover:bg-brand-gold-dark text-white font-semibold rounded-full sm:rounded-l-none sm:rounded-r-full transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/20 flex items-center justify-center gap-2 w-full sm:w-auto">
                     Subscribe
                     <ArrowRight size={16} />
                   </button>

@@ -49,6 +49,7 @@ export default function HeroSection() {
 
   const activeProduct = wheelProducts[activeIndex];
   const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
+  const baseAngle = radius < 400 ? 90 : 180;
 
   return (
     <section 
@@ -191,7 +192,7 @@ export default function HeroSection() {
             >
               {/* Product selector nodes placed on the circle rim */}
               {wheelProducts.map((product, idx) => {
-                const angle = 180 + idx * 60; // 180deg is the leftmost active point
+                const angle = baseAngle + idx * 60; // Dynamic base angle based on screen size
                 const isActive = idx === activeIndex;
 
                 return (
@@ -242,26 +243,43 @@ export default function HeroSection() {
             {/* 3. Glowing Active Ring Overlay Frame at the active peak position (fixed, does not rotate) */}
             <div
               className="absolute border-[4px] border-brand-gold rounded-full pointer-events-none z-30 animate-pulse"
-              style={{
-                width: `${thumbSize + 16}px`,
-                height: `${thumbSize + 16}px`,
-                right: radius < 400 ? "50%" : `${radius - (thumbSize + 16) / 2}px`,
-                marginRight: radius < 400 ? `${radius - (thumbSize + 16) / 2}px` : "0",
-                top: "50%",
-                transform: "translateY(-50%)",
-                boxShadow: "0 0 25px rgba(195, 154, 95, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3)",
-              }}
+              style={
+                radius < 400
+                  ? {
+                      width: `${thumbSize + 16}px`,
+                      height: `${thumbSize + 16}px`,
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%, calc(-50% + ${radius}px))`,
+                      boxShadow: "0 0 25px rgba(195, 154, 95, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3)",
+                    }
+                  : {
+                      width: `${thumbSize + 16}px`,
+                      height: `${thumbSize + 16}px`,
+                      right: `${radius - (thumbSize + 16) / 2}px`,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      boxShadow: "0 0 25px rgba(195, 154, 95, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3)",
+                    }
+              }
             />
 
             {/* Glowing Spotlight Overlay directly behind the active product selector */}
             <div
               className="absolute w-40 sm:w-56 h-40 sm:h-56 rounded-full bg-brand-gold/30 blur-3xl pointer-events-none z-0"
-              style={{
-                right: radius < 400 ? "50%" : `${radius}px`,
-                marginRight: radius < 400 ? `-${radius}px` : "0",
-                top: "50%",
-                transform: radius < 400 ? "translate(100%, -50%)" : "translate(50%, -50%)",
-              }}
+              style={
+                radius < 400
+                  ? {
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%, calc(-50% + ${radius}px))`,
+                    }
+                  : {
+                      right: `${radius}px`,
+                      top: "50%",
+                      transform: "translate(50%, -50%)",
+                    }
+              }
             />
 
             {/* Glowing Accent Ring tracing the outer edge of the half circle */}
