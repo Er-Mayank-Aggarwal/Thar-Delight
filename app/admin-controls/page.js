@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import {
   IndianRupee,
@@ -15,11 +13,9 @@ import {
   AlertTriangle,
   Users,
 } from "lucide-react";
-import { products } from "../data/products";
-import { dummyOrders, getRecentOrders } from "../data/dummy-orders";
-import { dummyCustomers } from "../data/dummy-customers";
-import { getLowStockItems } from "../data/dummy-inventory";
-import { dummyReviews } from "../data/dummy-reviews";
+import { prisma } from "@/lib/prisma";
+import { getAllProducts } from "@/app/actions/product-actions";
+import { getSession } from "@/lib/auth";
 
 const statusConfig = {
   pending: {
@@ -27,10 +23,15 @@ const statusConfig = {
     color: "bg-amber-100 text-amber-700",
     icon: AlertCircle,
   },
-  processing: {
-    label: "Processing",
+  confirmed: {
+    label: "Confirmed",
     color: "bg-blue-100 text-blue-700",
-    icon: Clock,
+    icon: CheckCircle2,
+  },
+  packed: {
+    label: "Packed",
+    color: "bg-indigo-100 text-indigo-700",
+    icon: Package,
   },
   shipped: {
     label: "Shipped",
@@ -42,38 +43,62 @@ const statusConfig = {
     color: "bg-emerald-100 text-emerald-700",
     icon: CheckCircle2,
   },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-700",
+    icon: AlertCircle,
+  },
+  returned: {
+    label: "Returned",
+    color: "bg-gray-100 text-gray-700",
+    icon: AlertCircle,
+  },
 };
 
-// Calculate best selling from order items
-function getBestSellers() {
-  const itemCounts = {};
-  dummyOrders.forEach((order) => {
-    order.items.forEach((item) => {
-      if (!itemCounts[item.name]) {
-        itemCounts[item.name] = { name: item.name, qty: 0, revenue: 0 };
-      }
-      itemCounts[item.name].qty += item.qty;
-      itemCounts[item.name].revenue += item.qty * item.price;
-    });
+const defaultStatus = {
+  label: "Unknown",
+  color: "bg-gray-100 text-gray-500",
+  icon: AlertCircle,
+};
+
+export default async function AdminDashboard() {
+  const products = await getAllProducts();
+  const inventory = await prisma.inventory.findMany({
+    include: { product: { select: { name: true } } }
   });
-  return Object.values(itemCounts)
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 5);
-}
 
-export default function AdminDashboard() {
-  const recentOrders = getRecentOrders(5);
-  const bestSellers = getBestSellers();
-  const lowStockItems = getLowStockItems();
+  const recentDbOrders = await prisma.order.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { user: true }
+  });
 
-  const totalRevenue = dummyOrders.reduce((sum, o) => sum + o.total, 0);
-  const totalOrders = dummyOrders.length;
+  const recentOrders = recentDbOrders.map(order => ({
+    id: order.id.slice(0, 8).toUpperCase(),
+    customer: { name: order.user?.name || "Guest" },
+    date: order.createdAt,
+    time: order.createdAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+    total: order.total,
+    status: order.orderStatus.toLowerCase(),
+  }));
+
+  const bestSellers = []; // Will populate when real orders come in
+
+  const lowStockItems = inventory
+    .filter((i) => i.quantity <= i.lowStockThreshold)
+    .map((i) => ({ ...i, productName: i.product.name }));
+
+  const revenueAgg = await prisma.order.aggregate({ _sum: { total: true } });
+  const totalRevenue = revenueAgg._sum.total || 0;
+  
+  const totalOrders = await prisma.order.count();
   const totalProducts = products.length;
-  const totalCustomers = dummyCustomers.length;
-  const pendingOrders = dummyOrders.filter(
-    (o) => o.status === "pending" || o.status === "processing"
-  ).length;
-  const pendingReviews = dummyReviews.filter((r) => !r.isApproved).length;
+  const totalCustomers = await prisma.user.count();
+  
+  const pendingOrders = await prisma.order.count({ 
+    where: { orderStatus: { in: ["PENDING", "CONFIRMED"] } } 
+  });
+  const pendingReviews = 0; // isApproved was removed from DB schema
 
   const stats = [
     {
@@ -225,7 +250,7 @@ export default function AdminDashboard() {
 
           <div className="divide-y divide-gray-50">
             {recentOrders.map((order) => {
-              const statusInfo = statusConfig[order.status];
+              const statusInfo = statusConfig[order.status] || defaultStatus;
               const StatusIcon = statusInfo.icon;
               return (
                 <div

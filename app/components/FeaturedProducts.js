@@ -1,12 +1,10 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import ProductCard from "./ProductCard";
-import { getFeaturedProducts } from "../data/products";
+import { getFeaturedProducts } from "@/app/actions/product-actions";
 
-export default function FeaturedProducts() {
-  const featured = getFeaturedProducts();
+export default async function FeaturedProducts() {
+  const featured = await getFeaturedProducts();
 
   return (
     <section className="py-20 sm:py-24 bg-white">

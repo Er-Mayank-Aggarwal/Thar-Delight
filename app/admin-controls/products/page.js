@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -10,28 +10,52 @@ import {
   ChevronDown,
   IndianRupee,
   ImageIcon,
+  Package,
 } from "lucide-react";
-import { products as initialProducts } from "../../data/products";
-import { categories } from "../../data/categories";
+import {
+  getAllProducts,
+  getAllCategories,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} from "@/app/actions/product-actions";
 
 export default function AdminProducts() {
-  const [productList, setProductList] = useState(initialProducts);
+  const [productList, setProductList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const emptyForm = {
     name: "",
     price: "",
-    originalPrice: "",
-    category: "millet-cookies",
-    shortDescription: "",
-    badge: "",
-    inStock: true,
+    description: "",
+    categoryId: "",
+    isActive: true,
+    isFeatured: false,
+    imageUrl: "",
   };
   const [formData, setFormData] = useState(emptyForm);
+
+  // Load data from DB
+  useEffect(() => {
+    Promise.all([getAllProducts(), getAllCategories()]).then(
+      ([products, cats]) => {
+        setProductList(products);
+        setCategories(cats);
+        if (cats.length > 0 && !emptyForm.categoryId) {
+          emptyForm.categoryId = cats[0].id;
+        }
+        setLoading(false);
+      }
+    );
+  }, []);
 
   // Filter products
   const filteredProducts = productList.filter((p) => {
@@ -39,14 +63,18 @@ export default function AdminProducts() {
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesCategory =
-      filterCategory === "all" || p.category === filterCategory;
+      filterCategory === "all" || p.categoryId === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
   // Open modal for Add
   const handleAdd = () => {
     setEditingProduct(null);
-    setFormData(emptyForm);
+    setFormData({
+      ...emptyForm,
+      categoryId: categories[0]?.id || "",
+    });
+    setError(null);
     setShowModal(true);
   };
 
@@ -56,75 +84,77 @@ export default function AdminProducts() {
     setFormData({
       name: product.name,
       price: product.price,
-      originalPrice: product.originalPrice || "",
-      category: product.category,
-      shortDescription: product.shortDescription,
-      badge: product.badge || "",
-      inStock: product.inStock,
+      description: product.description || "",
+      categoryId: product.categoryId,
+      isActive: product.isActive,
+      isFeatured: product.isFeatured,
+      imageUrl: product.images?.[0]?.url || "",
     });
+    setError(null);
     setShowModal(true);
   };
 
-  // Save product
-  const handleSave = () => {
+  // Save product (DB-backed)
+  const handleSave = async () => {
     if (!formData.name || !formData.price) return;
+    setSaving(true);
+    setError(null);
 
+    const payload = {
+      name: formData.name,
+      description: formData.description || formData.name,
+      price: Number(formData.price),
+      categoryId: formData.categoryId,
+      isActive: formData.isActive,
+      isFeatured: formData.isFeatured,
+      imageUrl: formData.imageUrl || undefined,
+    };
+
+    let result;
     if (editingProduct) {
-      setProductList((prev) =>
-        prev.map((p) =>
-          p.id === editingProduct.id
-            ? {
-                ...p,
-                name: formData.name,
-                slug: formData.name.toLowerCase().replace(/\s+/g, "-"),
-                price: Number(formData.price),
-                originalPrice: formData.originalPrice
-                  ? Number(formData.originalPrice)
-                  : null,
-                category: formData.category,
-                shortDescription: formData.shortDescription,
-                badge: formData.badge || null,
-                inStock: formData.inStock,
-              }
-            : p
-        )
-      );
+      result = await updateProduct(editingProduct.id, payload);
     } else {
-      const newProduct = {
-        id: Date.now(),
-        name: formData.name,
-        slug: formData.name.toLowerCase().replace(/\s+/g, "-"),
-        price: Number(formData.price),
-        originalPrice: formData.originalPrice
-          ? Number(formData.originalPrice)
-          : null,
-        image: "/images/products/ajwain-millet-cookies.jpeg",
-        category: formData.category,
-        badge: formData.badge || null,
-        rating: 0,
-        reviews: 0,
-        shortDescription: formData.shortDescription,
-        inStock: formData.inStock,
-      };
-      setProductList((prev) => [...prev, newProduct]);
+      result = await createProduct(payload);
     }
 
-    setShowModal(false);
-    setEditingProduct(null);
-    setFormData(emptyForm);
+    if (result.success) {
+      // Refresh from DB
+      const updated = await getAllProducts();
+      setProductList(updated);
+      setShowModal(false);
+      setEditingProduct(null);
+      setFormData(emptyForm);
+    } else {
+      setError(result.error);
+    }
+
+    setSaving(false);
   };
 
-  // Delete product
-  const handleDelete = (id) => {
-    setProductList((prev) => prev.filter((p) => p.id !== id));
+  // Delete product (DB-backed)
+  const handleDelete = async (id) => {
+    const result = await deleteProduct(id);
+    if (result.success) {
+      setProductList((prev) => prev.filter((p) => p.id !== id));
+    } else {
+      alert(result.error);
+    }
     setShowDeleteConfirm(null);
   };
 
   // Get category name
-  const getCategoryName = (slug) => {
-    const cat = categories.find((c) => c.slug === slug);
-    return cat ? cat.name : slug;
+  const getCategoryName = (categoryId) => {
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat ? cat.name : "Unknown";
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-gray-400 text-sm">Loading products...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -170,7 +200,7 @@ export default function AdminProducts() {
           >
             <option value="all">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat.slug} value={cat.slug}>
+              <option key={cat.id} value={cat.id}>
                 {cat.name}
               </option>
             ))}
@@ -205,9 +235,9 @@ export default function AdminProducts() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3.5">
                       <div className="w-12 h-12 rounded-xl bg-brand-cream flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {product.image ? (
+                        {product.images?.[0]?.url ? (
                           <img
-                            src={product.image}
+                            src={product.images[0].url}
                             alt={product.name}
                             className="w-full h-full object-cover"
                           />
@@ -219,36 +249,31 @@ export default function AdminProducts() {
                         <p className="text-sm font-medium text-gray-800">
                           {product.name}
                         </p>
-                        {product.badge && (
+                        {product.isFeatured && (
                           <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-full">
-                            {product.badge}
+                            Featured
                           </span>
                         )}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {getCategoryName(product.category)}
+                    {getCategoryName(product.categoryId)}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="text-sm font-semibold text-brand-brown">
                       ₹{product.price}
                     </span>
-                    {product.originalPrice && (
-                      <span className="text-xs text-gray-400 line-through ml-2">
-                        ₹{product.originalPrice}
-                      </span>
-                    )}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span
                       className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                        product.inStock
+                        product.isActive
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-red-100 text-red-600"
                       }`}
                     >
-                      {product.inStock ? "In Stock" : "Out of Stock"}
+                      {product.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -281,9 +306,9 @@ export default function AdminProducts() {
             <div key={product.id} className="px-5 py-4">
               <div className="flex items-start gap-3">
                 <div className="w-14 h-14 rounded-xl bg-brand-cream flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {product.image ? (
+                  {product.images?.[0]?.url ? (
                     <img
-                      src={product.image}
+                      src={product.images[0].url}
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />
@@ -298,17 +323,17 @@ export default function AdminProducts() {
                         {product.name}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {getCategoryName(product.category)}
+                        {getCategoryName(product.categoryId)}
                       </p>
                     </div>
                     <span
                       className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        product.inStock
+                        product.isActive
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-red-100 text-red-600"
                       }`}
                     >
-                      {product.inStock ? "In Stock" : "Out"}
+                      {product.isActive ? "Active" : "Off"}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-2">
@@ -316,11 +341,6 @@ export default function AdminProducts() {
                       <span className="text-sm font-semibold text-brand-brown">
                         ₹{product.price}
                       </span>
-                      {product.originalPrice && (
-                        <span className="text-xs text-gray-400 line-through ml-1.5">
-                          ₹{product.originalPrice}
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -407,6 +427,12 @@ export default function AdminProducts() {
 
             {/* Modal Body */}
             <div className="px-6 py-5 space-y-5">
+              {error && (
+                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+                  {error}
+                </div>
+              )}
+
               {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -423,50 +449,25 @@ export default function AdminProducts() {
                 />
               </div>
 
-              {/* Price Row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                    Price (₹) <span className="text-red-400">*</span>
-                  </label>
-                  <div className="relative">
-                    <IndianRupee
-                      size={14}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                      placeholder="249"
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                    Original Price (₹)
-                  </label>
-                  <div className="relative">
-                    <IndianRupee
-                      size={14}
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                      type="number"
-                      value={formData.originalPrice}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          originalPrice: e.target.value,
-                        })
-                      }
-                      placeholder="299"
-                      className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
-                    />
-                  </div>
+              {/* Price */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Price (₹) <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <IndianRupee
+                    size={14}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    placeholder="249"
+                    className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
+                  />
                 </div>
               </div>
 
@@ -477,14 +478,14 @@ export default function AdminProducts() {
                 </label>
                 <div className="relative">
                   <select
-                    value={formData.category}
+                    value={formData.categoryId}
                     onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                      setFormData({ ...formData, categoryId: e.target.value })
                     }
                     className="appearance-none w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all cursor-pointer"
                   >
                     {categories.map((cat) => (
-                      <option key={cat.slug} value={cat.slug}>
+                      <option key={cat.id} value={cat.id}>
                         {cat.name}
                       </option>
                     ))}
@@ -496,34 +497,17 @@ export default function AdminProducts() {
                 </div>
               </div>
 
-              {/* Badge */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Badge Label{" "}
-                  <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.badge}
-                  onChange={(e) =>
-                    setFormData({ ...formData, badge: e.target.value })
-                  }
-                  placeholder="e.g., Best Seller, New, Sale"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
-                />
-              </div>
-
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Short Description
+                  Description
                 </label>
                 <textarea
-                  value={formData.shortDescription}
+                  value={formData.description}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      shortDescription: e.target.value,
+                      description: e.target.value,
                     })
                   }
                   placeholder="Write a brief description of the product..."
@@ -532,30 +516,75 @@ export default function AdminProducts() {
                 />
               </div>
 
-              {/* Stock Toggle */}
-              <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-700">
-                    In Stock
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Toggle product availability
-                  </p>
-                </div>
-                <button
-                  onClick={() =>
-                    setFormData({ ...formData, inStock: !formData.inStock })
+              {/* Image URL */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Image URL{" "}
+                  <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.imageUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, imageUrl: e.target.value })
                   }
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${
-                    formData.inStock ? "bg-emerald-500" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                      formData.inStock ? "translate-x-6" : "translate-x-1"
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
+                />
+              </div>
+
+              {/* Toggles */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Active</p>
+                    <p className="text-xs text-gray-400">
+                      Show product in shop
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setFormData({ ...formData, isActive: !formData.isActive })
+                    }
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${
+                      formData.isActive ? "bg-emerald-500" : "bg-gray-300"
                     }`}
-                  />
-                </button>
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                        formData.isActive ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">
+                      Featured
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Show on homepage
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        isFeatured: !formData.isFeatured,
+                      })
+                    }
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 ${
+                      formData.isFeatured ? "bg-brand-gold" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                        formData.isFeatured ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -569,10 +598,14 @@ export default function AdminProducts() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={!formData.name || !formData.price}
+                disabled={!formData.name || !formData.price || saving}
                 className="flex-1 px-4 py-2.5 bg-brand-gold hover:bg-brand-gold-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-medium transition-colors"
               >
-                {editingProduct ? "Save Changes" : "Add Product"}
+                {saving
+                  ? "Saving..."
+                  : editingProduct
+                  ? "Save Changes"
+                  : "Add Product"}
               </button>
             </div>
           </div>

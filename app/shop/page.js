@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import ProductCard from "../components/ProductCard";
-import { products } from "../data/products";
+import { getAllProducts } from "@/app/actions/product-actions";
 import { categories } from "../data/categories";
 import { Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
@@ -16,7 +16,15 @@ function ShopContent() {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState(1200); // Max price
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [allProducts, setAllProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  useEffect(() => {
+    getAllProducts().then(data => {
+      setAllProducts(data);
+      setFilteredProducts(data);
+    });
+  }, []);
 
   // Sync state with query parameters
   useEffect(() => {
@@ -26,7 +34,8 @@ function ShopContent() {
 
   // Handle filtering and sorting
   useEffect(() => {
-    let result = [...products];
+    if (allProducts.length === 0) return;
+    let result = [...allProducts];
 
     // Filter by Category
     if (selectedCategory !== "all") {
@@ -93,7 +102,7 @@ function ShopContent() {
                       : "text-gray-500 hover:bg-brand-cream hover:text-brand-brown"
                       }`}
                   >
-                    All Categories ({products.length})
+                    All Categories ({allProducts.length})
                   </button>
                 </li>
                 {categories.map((cat) => (
@@ -147,7 +156,7 @@ function ShopContent() {
             {/* Sorting & Stats */}
             <div className="bg-white rounded-2xl p-4 border border-brand-sand/60 flex flex-col sm:flex-row items-center justify-between gap-4">
               <span className="text-sm text-gray-500 font-medium">
-                Showing {filteredProducts.length} of {products.length} products
+                Showing {filteredProducts.length} of {allProducts.length} products
               </span>
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <ArrowUpDown size={16} className="text-brand-gold" />

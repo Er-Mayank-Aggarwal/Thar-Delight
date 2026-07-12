@@ -1,4 +1,4 @@
-import { products } from "./products";
+import { products } from "./products.js";
 
 export const inventory = products.map((product) => ({
   productId: product.id,

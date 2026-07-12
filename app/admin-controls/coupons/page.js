@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Edit3,
@@ -14,30 +14,50 @@ import {
   Percent,
   Calendar,
 } from "lucide-react";
-import { dummyCoupons } from "../../data/dummy-coupons";
+import {
+  getAllCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+  toggleCoupon,
+} from "@/app/actions/coupon-actions";
 
 export default function AdminCoupons() {
-  const [coupons, setCoupons] = useState(dummyCoupons);
+  const [coupons, setCoupons] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const emptyForm = {
     code: "",
-    description: "",
-    discountType: "percentage",
-    discountValue: "",
-    minOrderAmount: "",
-    maxUses: "",
+    discountType: "PERCENTAGE",
+    value: "",
+    minimumOrder: "",
+    maximumDiscount: "",
+    usageLimit: "",
     expiresAt: "",
     isActive: true,
   };
   const [formData, setFormData] = useState(emptyForm);
 
+  // Load coupons from DB
+  useEffect(() => {
+    getAllCoupons()
+      .then((data) => {
+        setCoupons(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   const handleAdd = () => {
     setEditingCoupon(null);
     setFormData(emptyForm);
+    setError(null);
     setShowModal(true);
   };
 
@@ -45,62 +65,74 @@ export default function AdminCoupons() {
     setEditingCoupon(coupon);
     setFormData({
       code: coupon.code,
-      description: coupon.description,
       discountType: coupon.discountType,
-      discountValue: coupon.discountValue,
-      minOrderAmount: coupon.minOrderAmount,
-      maxUses: coupon.maxUses,
-      expiresAt: coupon.expiresAt,
+      value: coupon.value,
+      minimumOrder: coupon.minimumOrder || "",
+      maximumDiscount: coupon.maximumDiscount || "",
+      usageLimit: coupon.usageLimit || "",
+      expiresAt: coupon.expiresAt
+        ? new Date(coupon.expiresAt).toISOString().split("T")[0]
+        : "",
       isActive: coupon.isActive,
     });
+    setError(null);
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (!formData.code || !formData.discountValue) return;
+  const handleSave = async () => {
+    if (!formData.code || !formData.value) return;
+    setSaving(true);
+    setError(null);
 
+    const payload = {
+      code: formData.code,
+      discountType: formData.discountType,
+      value: Number(formData.value),
+      minimumOrder: formData.minimumOrder ? Number(formData.minimumOrder) : null,
+      maximumDiscount: formData.maximumDiscount
+        ? Number(formData.maximumDiscount)
+        : null,
+      usageLimit: formData.usageLimit ? Number(formData.usageLimit) : null,
+      expiresAt: formData.expiresAt || null,
+      isActive: formData.isActive,
+    };
+
+    let result;
     if (editingCoupon) {
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === editingCoupon.id
-            ? {
-                ...c,
-                ...formData,
-                discountValue: Number(formData.discountValue),
-                minOrderAmount: Number(formData.minOrderAmount) || 0,
-                maxUses: Number(formData.maxUses) || 999,
-              }
-            : c
-        )
-      );
+      result = await updateCoupon(editingCoupon.id, payload);
     } else {
-      setCoupons((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          ...formData,
-          code: formData.code.toUpperCase(),
-          discountValue: Number(formData.discountValue),
-          minOrderAmount: Number(formData.minOrderAmount) || 0,
-          maxUses: Number(formData.maxUses) || 999,
-          usedCount: 0,
-          createdAt: new Date().toISOString().split("T")[0],
-        },
-      ]);
+      result = await createCoupon(payload);
     }
-    setShowModal(false);
-    setFormData(emptyForm);
+
+    if (result.success) {
+      const updated = await getAllCoupons();
+      setCoupons(updated);
+      setShowModal(false);
+      setFormData(emptyForm);
+    } else {
+      setError(result.error);
+    }
+
+    setSaving(false);
   };
 
-  const handleDelete = (id) => {
-    setCoupons((prev) => prev.filter((c) => c.id !== id));
+  const handleDelete = async (id) => {
+    const result = await deleteCoupon(id);
+    if (result.success) {
+      setCoupons((prev) => prev.filter((c) => c.id !== id));
+    } else {
+      alert(result.error);
+    }
     setShowDeleteConfirm(null);
   };
 
-  const handleToggle = (id) => {
-    setCoupons((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c))
-    );
+  const handleToggle = async (id) => {
+    const result = await toggleCoupon(id);
+    if (result.success) {
+      setCoupons((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c))
+      );
+    }
   };
 
   const handleCopy = (code) => {
@@ -110,6 +142,14 @@ export default function AdminCoupons() {
   };
 
   const activeCoupons = coupons.filter((c) => c.isActive).length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-gray-400 text-sm">Loading coupons...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -134,151 +174,171 @@ export default function AdminCoupons() {
       </div>
 
       {/* Coupon Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {coupons.map((coupon) => {
-          const isExpired = new Date(coupon.expiresAt) < new Date();
-          const usagePercent = Math.round(
-            (coupon.usedCount / coupon.maxUses) * 100
-          );
-          return (
-            <div
-              key={coupon.id}
-              className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
-                coupon.isActive && !isExpired
-                  ? "border-brand-sand/30 hover:shadow-md"
-                  : "border-gray-200 opacity-70"
-              }`}
-            >
-              {/* Top strip */}
+      {coupons.length === 0 ? (
+        <div className="text-center py-16">
+          <Tag size={48} className="mx-auto text-gray-200 mb-4" />
+          <p className="text-gray-500 font-medium">No coupons yet</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Create your first coupon to get started
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {coupons.map((coupon) => {
+            const isExpired =
+              coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
+            const usagePercent = coupon.usageLimit
+              ? Math.round((coupon.timesUsed / coupon.usageLimit) * 100)
+              : 0;
+            return (
               <div
-                className={`h-1.5 ${
+                key={coupon.id}
+                className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${
                   coupon.isActive && !isExpired
-                    ? "bg-gradient-to-r from-brand-gold to-brand-gold-light"
-                    : "bg-gray-200"
+                    ? "border-brand-sand/30 hover:shadow-md"
+                    : "border-gray-200 opacity-70"
                 }`}
-              />
+              >
+                {/* Top strip */}
+                <div
+                  className={`h-1.5 ${
+                    coupon.isActive && !isExpired
+                      ? "bg-gradient-to-r from-brand-gold to-brand-gold-light"
+                      : "bg-gray-200"
+                  }`}
+                />
 
-              <div className="p-5 space-y-4">
-                {/* Code & Status */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-lg font-bold text-brand-brown tracking-wider">
-                        {coupon.code}
+                <div className="p-5 space-y-4">
+                  {/* Code & Status */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-lg font-bold text-brand-brown tracking-wider">
+                          {coupon.code}
+                        </span>
+                        <button
+                          onClick={() => handleCopy(coupon.code)}
+                          className="p-1 rounded text-gray-400 hover:text-brand-gold transition-colors"
+                          title="Copy code"
+                        >
+                          {copiedCode === coupon.code ? (
+                            <CheckCircle2
+                              size={14}
+                              className="text-emerald-500"
+                            />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
+                        isExpired
+                          ? "bg-gray-100 text-gray-500"
+                          : coupon.isActive
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {isExpired
+                        ? "Expired"
+                        : coupon.isActive
+                        ? "Active"
+                        : "Paused"}
+                    </span>
+                  </div>
+
+                  {/* Discount Info */}
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 bg-brand-cream rounded-lg px-3 py-2">
+                      {coupon.discountType === "PERCENTAGE" ? (
+                        <Percent size={16} className="text-brand-gold" />
+                      ) : (
+                        <IndianRupee size={16} className="text-brand-gold" />
+                      )}
+                      <span className="text-lg font-bold text-brand-brown">
+                        {coupon.discountType === "PERCENTAGE"
+                          ? `${coupon.value}%`
+                          : `₹${coupon.value}`}
                       </span>
+                      <span className="text-xs text-gray-400 ml-1">off</span>
+                    </div>
+                    {coupon.minimumOrder > 0 && (
+                      <p className="text-xs text-gray-400">
+                        Min. order: ₹{coupon.minimumOrder}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Usage Bar */}
+                  {coupon.usageLimit && (
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-gray-400">
+                          {coupon.timesUsed} / {coupon.usageLimit} used
+                        </span>
+                        <span className="text-gray-400">{usagePercent}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-brand-gold transition-all"
+                          style={{ width: `${usagePercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expiry & Actions */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <Calendar size={12} />
+                      {coupon.expiresAt
+                        ? `Expires: ${new Date(
+                            coupon.expiresAt
+                          ).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}`
+                        : "No expiry"}
+                    </span>
+                    <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => handleCopy(coupon.code)}
-                        className="p-1 rounded text-gray-400 hover:text-brand-gold transition-colors"
-                        title="Copy code"
+                        onClick={() => handleToggle(coupon.id)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          coupon.isActive
+                            ? "text-emerald-500 hover:bg-emerald-50"
+                            : "text-gray-400 hover:bg-gray-50"
+                        }`}
+                        title={coupon.isActive ? "Pause" : "Activate"}
                       >
-                        {copiedCode === coupon.code ? (
-                          <CheckCircle2 size={14} className="text-emerald-500" />
+                        {coupon.isActive ? (
+                          <CheckCircle2 size={16} />
                         ) : (
-                          <Copy size={14} />
+                          <XCircle size={16} />
                         )}
                       </button>
+                      <button
+                        onClick={() => handleEdit(coupon)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      >
+                        <Edit3 size={15} />
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(coupon.id)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {coupon.description}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
-                      isExpired
-                        ? "bg-gray-100 text-gray-500"
-                        : coupon.isActive
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {isExpired ? "Expired" : coupon.isActive ? "Active" : "Paused"}
-                  </span>
-                </div>
-
-                {/* Discount Info */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 bg-brand-cream rounded-lg px-3 py-2">
-                    {coupon.discountType === "percentage" ? (
-                      <Percent size={16} className="text-brand-gold" />
-                    ) : (
-                      <IndianRupee size={16} className="text-brand-gold" />
-                    )}
-                    <span className="text-lg font-bold text-brand-brown">
-                      {coupon.discountType === "percentage"
-                        ? `${coupon.discountValue}%`
-                        : `₹${coupon.discountValue}`}
-                    </span>
-                    <span className="text-xs text-gray-400 ml-1">off</span>
-                  </div>
-                  {coupon.minOrderAmount > 0 && (
-                    <p className="text-xs text-gray-400">
-                      Min. order: ₹{coupon.minOrderAmount}
-                    </p>
-                  )}
-                </div>
-
-                {/* Usage Bar */}
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-400">
-                      {coupon.usedCount} / {coupon.maxUses} used
-                    </span>
-                    <span className="text-gray-400">{usagePercent}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-brand-gold transition-all"
-                      style={{ width: `${usagePercent}%` }}
-                    />
-                  </div>
-                </div>
-
-                {/* Expiry & Actions */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <span className="text-xs text-gray-400 flex items-center gap-1">
-                    <Calendar size={12} />
-                    Expires:{" "}
-                    {new Date(coupon.expiresAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleToggle(coupon.id)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        coupon.isActive
-                          ? "text-emerald-500 hover:bg-emerald-50"
-                          : "text-gray-400 hover:bg-gray-50"
-                      }`}
-                      title={coupon.isActive ? "Pause" : "Activate"}
-                    >
-                      {coupon.isActive ? (
-                        <CheckCircle2 size={16} />
-                      ) : (
-                        <XCircle size={16} />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(coupon)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                    >
-                      <Edit3 size={15} />
-                    </button>
-                    <button
-                      onClick={() => setShowDeleteConfirm(coupon.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <Trash2 size={15} />
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
@@ -330,6 +390,12 @@ export default function AdminCoupons() {
             </div>
 
             <div className="px-6 py-5 space-y-5">
+              {error && (
+                <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+                  {error}
+                </div>
+              )}
+
               {/* Code */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -349,22 +415,6 @@ export default function AdminCoupons() {
                 />
               </div>
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Description
-                </label>
-                <input
-                  type="text"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="e.g., 25% off summer collection"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
-                />
-              </div>
-
               {/* Discount Type & Value */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -374,10 +424,13 @@ export default function AdminCoupons() {
                   <div className="flex rounded-xl border border-gray-200 overflow-hidden">
                     <button
                       onClick={() =>
-                        setFormData({ ...formData, discountType: "percentage" })
+                        setFormData({
+                          ...formData,
+                          discountType: "PERCENTAGE",
+                        })
                       }
                       className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                        formData.discountType === "percentage"
+                        formData.discountType === "PERCENTAGE"
                           ? "bg-brand-gold text-white"
                           : "bg-white text-gray-500 hover:bg-gray-50"
                       }`}
@@ -386,15 +439,15 @@ export default function AdminCoupons() {
                     </button>
                     <button
                       onClick={() =>
-                        setFormData({ ...formData, discountType: "flat" })
+                        setFormData({ ...formData, discountType: "FIXED" })
                       }
                       className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
-                        formData.discountType === "flat"
+                        formData.discountType === "FIXED"
                           ? "bg-brand-gold text-white"
                           : "bg-white text-gray-500 hover:bg-gray-50"
                       }`}
                     >
-                      ₹ Flat
+                      ₹ Fixed
                     </button>
                   </div>
                 </div>
@@ -404,15 +457,15 @@ export default function AdminCoupons() {
                   </label>
                   <input
                     type="number"
-                    value={formData.discountValue}
+                    value={formData.value}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        discountValue: e.target.value,
+                        value: e.target.value,
                       })
                     }
                     placeholder={
-                      formData.discountType === "percentage" ? "10" : "50"
+                      formData.discountType === "PERCENTAGE" ? "10" : "50"
                     }
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
                   />
@@ -427,11 +480,11 @@ export default function AdminCoupons() {
                   </label>
                   <input
                     type="number"
-                    value={formData.minOrderAmount}
+                    value={formData.minimumOrder}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        minOrderAmount: e.target.value,
+                        minimumOrder: e.target.value,
                       })
                     }
                     placeholder="200"
@@ -444,14 +497,37 @@ export default function AdminCoupons() {
                   </label>
                   <input
                     type="number"
-                    value={formData.maxUses}
+                    value={formData.usageLimit}
                     onChange={(e) =>
-                      setFormData({ ...formData, maxUses: e.target.value })
+                      setFormData({
+                        ...formData,
+                        usageLimit: e.target.value,
+                      })
                     }
                     placeholder="100"
                     className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
                   />
                 </div>
+              </div>
+
+              {/* Max Discount */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Max Discount (₹){" "}
+                  <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.maximumDiscount}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      maximumDiscount: e.target.value,
+                    })
+                  }
+                  placeholder="500"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
+                />
               </div>
 
               {/* Expiry Date */}
@@ -503,10 +579,14 @@ export default function AdminCoupons() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={!formData.code || !formData.discountValue}
+                disabled={!formData.code || !formData.value || saving}
                 className="flex-1 px-4 py-2.5 bg-brand-gold hover:bg-brand-gold-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-medium transition-colors"
               >
-                {editingCoupon ? "Save Changes" : "Create Coupon"}
+                {saving
+                  ? "Saving..."
+                  : editingCoupon
+                  ? "Save Changes"
+                  : "Create Coupon"}
               </button>
             </div>
           </div>

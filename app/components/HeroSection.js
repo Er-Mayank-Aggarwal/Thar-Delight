@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, ShoppingBag, Star, Leaf } from "lucide-react";
+import { ArrowRight, ShoppingBag, Star, Leaf, Loader2 } from "lucide-react";
 import { products } from "../data/products";
+import { useCart } from "../context/CartContext";
+import { getProductBySlug } from "../actions/product-actions";
 
 // Select 6 products for the circular wheel
 const wheelProducts = products.slice(0, 6);
@@ -21,6 +23,9 @@ const bgGradients = [
 export default function HeroSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [radius, setRadius] = useState(400);
+  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
   // Auto-rotate every 5 seconds
   useEffect(() => {
@@ -50,6 +55,22 @@ export default function HeroSection() {
   const activeProduct = wheelProducts[activeIndex];
   const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
   const baseAngle = radius < 400 ? 90 : 180;
+
+  const handleAddToCart = async () => {
+    try {
+      setIsAdding(true);
+      const realProduct = await getProductBySlug(activeProduct.slug);
+      if (realProduct) {
+        await addToCart(realProduct);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 2000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <section 
@@ -117,9 +138,23 @@ export default function HeroSection() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4 animate-fade-in-up duration-900">
-                <button className="group inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold rounded-full transition-all duration-300 hover:shadow-xl hover:shadow-brand-gold/25 hover:-translate-y-0.5">
-                  <ShoppingBag size={18} />
-                  Add to Cart
+                <button 
+                  onClick={handleAddToCart}
+                  disabled={isAdding || added}
+                  className={`group inline-flex items-center justify-center gap-2 px-8 py-4 text-white font-semibold rounded-full transition-all duration-300 shadow-xl hover:-translate-y-0.5 ${
+                    added ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25" : "bg-brand-gold hover:bg-brand-gold-dark shadow-brand-gold/25"
+                  }`}
+                >
+                  {isAdding ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : added ? (
+                    "Added!"
+                  ) : (
+                    <>
+                      <ShoppingBag size={18} />
+                      Add to Cart
+                    </>
+                  )}
                 </button>
                 <Link
                   href={`/product/${activeProduct.slug}`}

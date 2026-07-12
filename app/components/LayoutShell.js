@@ -3,20 +3,21 @@
 import { usePathname } from "next/navigation";
 import Header from "./Header";
 import Footer from "./Footer";
+import { CartProvider } from "../context/CartContext";
 
 export default function LayoutShell({ children }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin-controls");
 
   if (isAdmin) {
-    return <>{children}</>;
+    return <CartProvider>{children}</CartProvider>;
   }
 
   return (
-    <>
+    <CartProvider>
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
-    </>
+    </CartProvider>
   );
 }

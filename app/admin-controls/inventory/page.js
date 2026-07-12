@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -11,21 +11,30 @@ import {
   ArrowUpDown,
   ImageIcon,
 } from "lucide-react";
-import { inventory as initialInventory } from "../../data/dummy-inventory";
-import { categories } from "../../data/categories";
+import { getAllInventory, updateStock } from "@/app/actions/inventory-actions";
 
 export default function AdminInventory() {
-  const [stock, setStock] = useState(initialInventory);
+  const [stock, setStock] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    getAllInventory().then(data => {
+      const mapped = data.map(item => ({
+        ...item,
+        productName: item.product.name,
+        categoryName: item.product.category?.name || "Unknown",
+        image: item.product.images?.[0]?.url || null,
+      }));
+      setStock(mapped);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const [filterView, setFilterView] = useState("all"); // all, low, ok
   const [sortBy, setSortBy] = useState("name"); // name, stock-asc, stock-desc
   const [adjustModal, setAdjustModal] = useState(null);
   const [adjustAmount, setAdjustAmount] = useState("");
-
-  const getCategoryName = (slug) => {
-    const cat = categories.find((c) => c.slug === slug);
-    return cat ? cat.name : slug;
-  };
 
   // Filter
   let filtered = stock.filter((item) =>
@@ -33,51 +42,60 @@ export default function AdminInventory() {
   );
 
   if (filterView === "low") {
-    filtered = filtered.filter((i) => i.currentStock <= i.lowStockThreshold);
+    filtered = filtered.filter((i) => i.quantity <= i.lowStockThreshold);
   } else if (filterView === "ok") {
-    filtered = filtered.filter((i) => i.currentStock > i.lowStockThreshold);
+    filtered = filtered.filter((i) => i.quantity > i.lowStockThreshold);
   }
 
   // Sort
   if (sortBy === "stock-asc") {
-    filtered.sort((a, b) => a.currentStock - b.currentStock);
+    filtered.sort((a, b) => a.quantity - b.quantity);
   } else if (sortBy === "stock-desc") {
-    filtered.sort((a, b) => b.currentStock - a.currentStock);
+    filtered.sort((a, b) => b.quantity - a.quantity);
   } else {
     filtered.sort((a, b) => a.productName.localeCompare(b.productName));
   }
 
   const lowStockCount = stock.filter(
-    (i) => i.currentStock <= i.lowStockThreshold
+    (i) => i.quantity <= i.lowStockThreshold
   ).length;
 
   // Adjust stock
-  const handleAdjust = () => {
+  const handleAdjust = async () => {
     if (!adjustModal || adjustAmount === "") return;
     const newStock = Math.max(0, Number(adjustAmount));
-    setStock((prev) =>
-      prev.map((item) =>
-        item.productId === adjustModal.productId
-          ? {
-              ...item,
-              currentStock: newStock,
-              lastRestocked:
-                newStock > item.currentStock
-                  ? new Date().toISOString().split("T")[0]
-                  : item.lastRestocked,
-            }
-          : item
-      )
-    );
+    
+    const result = await updateStock(adjustModal.productId, newStock);
+    
+    if (result.success) {
+      setStock((prev) =>
+        prev.map((item) =>
+          item.productId === adjustModal.productId
+            ? { ...item, quantity: newStock }
+            : item
+        )
+      );
+    } else {
+      console.error("Failed to update stock:", result.error);
+    }
+
     setAdjustModal(null);
     setAdjustAmount("");
   };
 
   const getStockLevel = (item) => {
-    if (item.currentStock === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-700", barColor: "bg-red-500" };
-    if (item.currentStock <= item.lowStockThreshold) return { label: "Low Stock", color: "bg-amber-100 text-amber-700", barColor: "bg-amber-500" };
+    if (item.quantity === 0) return { label: "Out of Stock", color: "bg-red-100 text-red-700", barColor: "bg-red-500" };
+    if (item.quantity <= item.lowStockThreshold) return { label: "Low Stock", color: "bg-amber-100 text-amber-700", barColor: "bg-amber-500" };
     return { label: "In Stock", color: "bg-emerald-100 text-emerald-700", barColor: "bg-emerald-500" };
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-gray-400 text-sm">Loading inventory...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -159,7 +177,7 @@ export default function AdminInventory() {
           const level = getStockLevel(item);
           const stockPercent = Math.min(
             100,
-            (item.currentStock / (item.lowStockThreshold * 5)) * 100
+            (item.quantity / (item.lowStockThreshold * 5)) * 100
           );
           return (
             <div
@@ -186,7 +204,7 @@ export default function AdminInventory() {
                     {item.productName}
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
-                    {getCategoryName(item.category)}
+                    {item.categoryName}
                   </p>
                 </div>
 
@@ -194,7 +212,7 @@ export default function AdminInventory() {
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-2xl font-bold text-brand-brown">
-                      {item.currentStock}
+                      {item.quantity}
                     </span>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${level.color}`}
@@ -209,11 +227,7 @@ export default function AdminInventory() {
                     />
                   </div>
                   <p className="text-[10px] text-gray-400 mt-1">
-                    {item.unit} · Last restocked:{" "}
-                    {new Date(item.lastRestocked).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                    })}
+                    Low threshold: {item.lowStockThreshold}
                   </p>
                 </div>
 
@@ -221,7 +235,7 @@ export default function AdminInventory() {
                 <button
                   onClick={() => {
                     setAdjustModal(item);
-                    setAdjustAmount(item.currentStock);
+                    setAdjustAmount(item.quantity);
                   }}
                   className="w-full px-4 py-2 bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-gold-dark rounded-xl text-xs font-medium transition-colors"
                 >
@@ -253,7 +267,7 @@ export default function AdminInventory() {
 
             <div className="bg-gray-50 rounded-xl p-4 mb-5">
               <p className="text-xs text-gray-400 text-center mb-3">
-                Current stock: <span className="font-semibold text-gray-600">{adjustModal.currentStock}</span> {adjustModal.unit}
+                Current stock: <span className="font-semibold text-gray-600">{adjustModal.quantity}</span> units
               </p>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
@@ -282,7 +296,7 @@ export default function AdminInventory() {
               </button>
               <button
                 onClick={handleAdjust}
-                disabled={adjustAmount === 0}
+                disabled={adjustAmount === ""}
                 className="flex-1 px-4 py-2.5 bg-brand-gold hover:bg-brand-gold-dark disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-sm font-medium transition-colors"
               >
                 Update Stock

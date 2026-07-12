@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Star,
   CheckCircle2,
@@ -8,11 +8,15 @@ import {
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
-import { dummyReviews } from "../../data/dummy-reviews";
+import { getAdminReviews } from "@/app/actions/admin-actions";
 
 export default function AdminReviews() {
-  const [reviews, setReviews] = useState(dummyReviews);
+  const [reviews, setReviews] = useState([]);
   const [filterApproval, setFilterApproval] = useState("all"); // all, approved, pending
+
+  useEffect(() => {
+    getAdminReviews().then(setReviews);
+  }, []);
 
   const handleApprove = (id) => {
     setReviews((prev) =>
@@ -145,10 +149,10 @@ export default function AdminReviews() {
 
                 <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                   <span className="font-medium text-gray-600">
-                    {review.customerName}
+                    {review.customer.name}
                   </span>
                   <span>·</span>
-                  <span>{review.productName}</span>
+                  <span>{review.product.name}</span>
                   <span>·</span>
                   <span>
                     {new Date(review.date).toLocaleDateString("en-IN", {

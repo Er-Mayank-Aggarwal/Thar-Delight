@@ -1,20 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ShoppingBag, Star, Shield, RotateCcw, Truck, Sparkles } from "lucide-react";
-import { products } from "../../data/products";
+import { getProductBySlug, getRelatedProducts } from "@/app/actions/product-actions";
 import ProductCard from "../../components/ProductCard";
+import { useCart } from "../../context/CartContext";
 
 export default function ProductDetail({ params }) {
   // Unwrap parameters safely (works on Next.js 13/14/15+)
   const resolvedParams = React.use(params);
   const { slug } = resolvedParams;
 
-  const product = products.find((p) => p.slug === slug);
+  const { addToCart } = useCart();
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
+
+  useEffect(() => {
+    async function loadData() {
+      const p = await getProductBySlug(slug);
+      if (p) {
+        setProduct(p);
+        const related = await getRelatedProducts(p.categoryId, p.id, 3);
+        setRelatedProducts(related);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-warm-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-gold" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -33,11 +59,6 @@ export default function ProductDetail({ params }) {
       </div>
     );
   }
-
-  // Get related products (same category, excluding current product)
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 3);
 
   // Dynamic specs based on product category
   const specDetails = {
@@ -156,11 +177,22 @@ export default function ProductDetail({ params }) {
 
                 {/* Add to Cart button */}
                 <button
-                  className="w-full sm:flex-1 py-3.5 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-xl hover:shadow-brand-gold/25 hover:-translate-y-0.5"
+                  onClick={() => {
+                    addToCart(product, quantity);
+                    setAdded(true);
+                    setTimeout(() => setAdded(false), 2000);
+                  }}
+                  className={`w-full sm:flex-1 py-3.5 text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:-translate-y-0.5 active:scale-95 ${added ? "bg-emerald-500 hover:bg-emerald-600" : "bg-brand-gold hover:bg-brand-gold-dark hover:shadow-brand-gold/25"}`}
                   aria-label="Add to cart"
                 >
-                  <ShoppingBag size={18} />
-                  Add to Shopping Cart
+                  {added ? (
+                    "Added to Cart!"
+                  ) : (
+                    <>
+                      <ShoppingBag size={18} />
+                      Add to Shopping Cart
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -189,7 +221,7 @@ export default function ProductDetail({ params }) {
         <div className="bg-white rounded-3xl border border-brand-sand/60 shadow-md overflow-hidden mb-14">
           {/* Tab Selector Headers */}
           <div className="flex border-b border-brand-sand">
-            {["description", "specifications", "shipping"].map((tab) => (
+            {["description", "specifications", "shipping", "reviews"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -265,6 +297,36 @@ export default function ProductDetail({ params }) {
                 <p>
                   <strong>Storage Care:</strong> Since we do not add chemical preservatives, store the cookies/snacks in an airtight glass container immediately after opening to protect them from moisture and preserve their crunch.
                 </p>
+              </div>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="space-y-6">
+                <h3 className="font-serif text-xl text-brand-brown font-bold mb-4">Customer Reviews</h3>
+                {(!product.reviews || product.reviews.length === 0) ? (
+                  <p className="text-gray-500 italic">No reviews yet. Be the first to review this product!</p>
+                ) : (
+                  <div className="space-y-4">
+                    {product.reviews.map((review) => (
+                      <div key={review.id} className="p-4 bg-brand-cream/20 rounded-xl border border-brand-sand/40">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold text-brand-brown">{review.user?.name || "Anonymous"}</span>
+                          <span className="text-gray-300">|</span>
+                          <div className="flex items-center">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={i < review.rating ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm">{review.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

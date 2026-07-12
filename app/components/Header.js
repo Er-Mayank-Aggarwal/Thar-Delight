@@ -10,6 +10,8 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import CartDrawer from "./CartDrawer";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -23,7 +25,8 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [cartCount] = useState(0);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -126,6 +129,7 @@ export default function Header() {
 
               {/* Cart */}
               <button
+                onClick={() => setIsCartOpen(true)}
                 className="relative p-2 text-brand-brown hover:text-brand-gold transition-colors"
                 aria-label="Shopping Cart"
               >
@@ -227,6 +231,9 @@ export default function Header() {
           </div>
         </>
       )}
+
+      {/* Cart Drawer */}
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 }

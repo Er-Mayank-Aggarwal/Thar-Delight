@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   ArrowUpDown,
@@ -12,13 +12,37 @@ import {
   IndianRupee,
   Calendar,
   ChevronDown,
+  ShieldAlert,
 } from "lucide-react";
-import { dummyCustomers } from "../../data/dummy-customers";
+import { getAdminCustomers, updateCustomerRole } from "@/app/actions/admin-actions";
 
 export default function AdminCustomers() {
+  const [customers, setCustomers] = useState([]);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name"); // name, orders, spent, recent
   const [sortDir, setSortDir] = useState("desc");
+
+  const loadCustomers = () => getAdminCustomers().then(setCustomers);
+  
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const handleRoleChange = async (userId, newRole) => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const res = await updateCustomerRole(userId, newRole);
+      if (res.success) {
+        await loadCustomers();
+      } else {
+        alert(res.error || "Failed to update role");
+      }
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -29,7 +53,7 @@ export default function AdminCustomers() {
     }
   };
 
-  let filtered = dummyCustomers.filter(
+  let filtered = customers.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -58,11 +82,11 @@ export default function AdminCustomers() {
     return sortDir === "asc" ? compare : -compare;
   });
 
-  const totalCustomers = dummyCustomers.length;
-  const totalRevenue = dummyCustomers.reduce((s, c) => s + c.totalSpent, 0);
-  const avgOrderValue = Math.round(
+  const totalCustomers = customers.length;
+  const totalRevenue = customers.reduce((s, c) => s + c.totalSpent, 0);
+  const avgOrderValue = totalCustomers === 0 ? 0 : Math.round(
     totalRevenue /
-      dummyCustomers.reduce((s, c) => s + c.totalOrders, 0)
+      (customers.reduce((s, c) => s + c.totalOrders, 0) || 1)
   );
 
   return (
@@ -155,6 +179,7 @@ export default function AdminCustomers() {
               <tr className="text-xs font-medium text-gray-400 uppercase tracking-wider border-b border-gray-100">
                 <th className="text-left px-6 py-4">Customer</th>
                 <th className="text-left px-6 py-4">Contact</th>
+                <th className="text-left px-6 py-4">Role</th>
                 <th className="text-left px-6 py-4">City</th>
                 <th
                   className="text-center px-6 py-4 cursor-pointer hover:text-gray-600 transition-colors"
@@ -215,6 +240,22 @@ export default function AdminCustomers() {
                     <p className="text-xs text-gray-400">{customer.phone}</p>
                   </td>
                   <td className="px-6 py-4">
+                    <select
+                      value={customer.role}
+                      disabled={isUpdating || customer.role === "OWNER"}
+                      onChange={(e) => handleRoleChange(customer.id, e.target.value)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-full cursor-pointer focus:outline-none appearance-none disabled:opacity-50 ${
+                        customer.role === "ADMIN" || customer.role === "OWNER"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      <option value="CUSTOMER">Customer</option>
+                      <option value="ADMIN">Admin</option>
+                      {customer.role === "OWNER" && <option value="OWNER">Owner</option>}
+                    </select>
+                  </td>
+                  <td className="px-6 py-4">
                     <span className="inline-flex items-center gap-1 text-sm text-gray-500">
                       <MapPin size={13} className="text-gray-400" />
                       {customer.city}
@@ -255,8 +296,11 @@ export default function AdminCustomers() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-gray-800">
+                    <p className="text-sm font-medium text-gray-800 flex items-center gap-2">
                       {customer.name}
+                      {customer.role !== "CUSTOMER" && (
+                        <ShieldAlert size={12} className="text-purple-600" />
+                      )}
                     </p>
                     <span className="text-sm font-semibold text-brand-brown flex-shrink-0">
                       ₹{customer.totalSpent.toLocaleString("en-IN")}

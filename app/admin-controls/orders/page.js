@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Search,
   ChevronDown,
@@ -17,7 +17,7 @@ import {
   CreditCard,
   ArrowUpDown,
 } from "lucide-react";
-import { dummyOrders } from "../../data/dummy-orders";
+import { getAdminOrders, updateOrderStatus } from "@/app/actions/admin-actions";
 
 const statusConfig = {
   pending: {
@@ -26,11 +26,17 @@ const statusConfig = {
     icon: AlertCircle,
     dotColor: "bg-amber-500",
   },
-  processing: {
-    label: "Processing",
+  confirmed: {
+    label: "Confirmed",
     color: "bg-blue-100 text-blue-700",
-    icon: Clock,
+    icon: CheckCircle2,
     dotColor: "bg-blue-500",
+  },
+  packed: {
+    label: "Packed",
+    color: "bg-indigo-100 text-indigo-700",
+    icon: Package,
+    dotColor: "bg-indigo-500",
   },
   shipped: {
     label: "Shipped",
@@ -44,21 +50,44 @@ const statusConfig = {
     icon: CheckCircle2,
     dotColor: "bg-emerald-500",
   },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-700",
+    icon: AlertCircle,
+    dotColor: "bg-red-500",
+  },
+  returned: {
+    label: "Returned",
+    color: "bg-gray-100 text-gray-600",
+    icon: AlertCircle,
+    dotColor: "bg-gray-500",
+  },
 };
 
-const statusFlow = ["pending", "processing", "shipped", "delivered"];
+const defaultStatus = {
+  label: "Unknown",
+  color: "bg-gray-100 text-gray-500",
+  icon: AlertCircle,
+  dotColor: "bg-gray-400",
+};
+
+const statusFlow = ["pending", "confirmed", "packed", "shipped", "delivered"];
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState(dummyOrders);
+  const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortBy, setSortBy] = useState("newest"); // newest, oldest, oldest-pending
 
+  useEffect(() => {
+    getAdminOrders().then(setOrders);
+  }, []);
+
   // Filter orders
   let filteredOrders = orders.filter((o) => {
     const matchesSearch =
-      o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.displayId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       o.customer.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       filterStatus === "all" || o.status === filterStatus;
@@ -82,13 +111,22 @@ export default function AdminOrders() {
     return new Date(b.date + "T" + (b.time || "00:00")) - new Date(a.date + "T" + (a.time || "00:00"));
   });
 
-  // Update order status
-  const handleStatusUpdate = (orderId, newStatus) => {
+  // Update order status (persisted to DB)
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    // Optimistic update
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
+    }
+
+    // Persist to database
+    const result = await updateOrderStatus(orderId, newStatus);
+    if (!result.success) {
+      // Revert on failure
+      console.error("Failed to update status:", result.error);
+      getAdminOrders().then(setOrders);
     }
   };
 
@@ -105,8 +143,10 @@ export default function AdminOrders() {
   const getActionLabel = (currentStatus) => {
     switch (currentStatus) {
       case "pending":
-        return "Start Processing";
-      case "processing":
+        return "Confirm Order";
+      case "confirmed":
+        return "Mark as Packed";
+      case "packed":
         return "Mark as Shipped";
       case "shipped":
         return "Mark as Delivered";
@@ -119,9 +159,12 @@ export default function AdminOrders() {
   const statusCounts = {
     all: orders.length,
     pending: orders.filter((o) => o.status === "pending").length,
-    processing: orders.filter((o) => o.status === "processing").length,
+    confirmed: orders.filter((o) => o.status === "confirmed").length,
+    packed: orders.filter((o) => o.status === "packed").length,
     shipped: orders.filter((o) => o.status === "shipped").length,
     delivered: orders.filter((o) => o.status === "delivered").length,
+    cancelled: orders.filter((o) => o.status === "cancelled").length,
+    returned: orders.filter((o) => o.status === "returned").length,
   };
 
   return (
@@ -141,7 +184,8 @@ export default function AdminOrders() {
         {[
           { key: "all", label: "All Orders" },
           { key: "pending", label: "Pending" },
-          { key: "processing", label: "Processing" },
+          { key: "confirmed", label: "Confirmed" },
+          { key: "packed", label: "Packed" },
           { key: "shipped", label: "Shipped" },
           { key: "delivered", label: "Delivered" },
         ].map((tab) => (
@@ -216,7 +260,7 @@ export default function AdminOrders() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filteredOrders.map((order) => {
-                const statusInfo = statusConfig[order.status];
+                const statusInfo = statusConfig[order.status] || defaultStatus;
                 const StatusIcon = statusInfo.icon;
                 const nextStatus = getNextStatus(order.status);
                 const actionLabel = getActionLabel(order.status);
@@ -226,7 +270,7 @@ export default function AdminOrders() {
                     className="hover:bg-brand-cream/30 transition-colors"
                   >
                     <td className="px-6 py-4 text-sm font-mono font-medium text-brand-brown">
-                      {order.id}
+                      {order.displayId}
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm font-medium text-gray-800">
@@ -295,7 +339,7 @@ export default function AdminOrders() {
         {/* Mobile Cards */}
         <div className="md:hidden divide-y divide-gray-100">
           {filteredOrders.map((order) => {
-            const statusInfo = statusConfig[order.status];
+            const statusInfo = statusConfig[order.status] || defaultStatus;
             const StatusIcon = statusInfo.icon;
             const nextStatus = getNextStatus(order.status);
             const actionLabel = getActionLabel(order.status);
@@ -303,7 +347,7 @@ export default function AdminOrders() {
               <div key={order.id} className="px-5 py-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-mono font-medium text-brand-brown">
-                    {order.id}
+                    {order.displayId}
                   </span>
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}
@@ -372,7 +416,7 @@ export default function AdminOrders() {
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div>
                 <h3 className="text-lg font-serif !text-brand-brown">
-                  Order {selectedOrder.id}
+                  Order {selectedOrder.displayId}
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Placed on{" "}
