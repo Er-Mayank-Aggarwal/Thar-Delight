@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ShoppingBag,
@@ -25,8 +26,19 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartCount } = useCart();
+  const router = useRouter();
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -148,18 +160,19 @@ export default function Header() {
         {isSearchOpen && (
           <div className="absolute inset-x-0 top-full bg-white shadow-xl border-t border-brand-sand animate-fade-in-up">
             <div className="max-w-2xl mx-auto p-6">
-              <div className="relative">
+              <form onSubmit={handleSearchSubmit} className="relative">
                 <input
                   type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for products, categories..."
                   className="w-full px-6 py-4 bg-brand-cream rounded-full text-brand-brown placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/40 text-lg"
                   autoFocus
                 />
-                <Search
-                  size={20}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-gold"
-                />
-              </div>
+                <button type="submit" className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-gold hover:text-brand-gold-dark">
+                  <Search size={20} />
+                </button>
+              </form>
             </div>
           </div>
         )}

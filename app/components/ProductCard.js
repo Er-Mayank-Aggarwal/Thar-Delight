@@ -2,13 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Star, Eye } from "lucide-react";
+import { ShoppingBag, Star, Eye, Heart } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { toggleWishlist } from "../actions/wishlist-actions";
 
 export default function ProductCard({ product }) {
   const { cart, addToCart, updateQuantity } = useCart();
   const [added, setAdded] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisting, setIsWishlisting] = useState(false);
   const cartItem = cart.find((item) => item.id === product.id);
 
   const handleAddToCart = (e) => {
@@ -19,6 +22,19 @@ export default function ProductCard({ product }) {
       setAdded(true);
       setTimeout(() => setAdded(false), 2000);
     }
+  };
+
+  const handleWishlist = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isWishlisting) return;
+    
+    setIsWishlisting(true);
+    const res = await toggleWishlist(product.id);
+    if (res.success) {
+      setIsWishlisted(res.added);
+    }
+    setIsWishlisting(false);
   };
 
   const handleUpdateQuantity = (e, increment) => {
@@ -73,6 +89,16 @@ export default function ProductCard({ product }) {
             -{discount}%
           </span>
         )}
+
+        {/* Wishlist Button */}
+        <button
+          onClick={handleWishlist}
+          disabled={isWishlisting}
+          className="absolute top-3 right-3 sm:top-12 sm:right-3 p-2 bg-white/90 hover:bg-white text-brand-brown rounded-full z-10 shadow-sm transition-all hover:scale-110 disabled:opacity-50"
+          aria-label="Toggle Wishlist"
+        >
+          <Heart size={16} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
+        </button>
 
         {/* Quick Actions */}
         <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 w-[90%] opacity-100 lg:opacity-0 translate-y-0 lg:translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 z-10">

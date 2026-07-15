@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from "lucide-react";
+import { submitContactMessage } from "../actions/contact-actions";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -11,14 +12,23 @@ export default function Contact() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Mock submit action
-    setTimeout(() => {
+    setIsSubmitting(true);
+    setError(null);
+    
+    const res = await submitContactMessage(formData);
+    
+    if (res.success) {
       setSubmitted(true);
       setFormData({ name: "", email: "", subject: "", message: "" });
-    }, 500);
+    } else {
+      setError(res.error);
+    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -168,12 +178,15 @@ export default function Contact() {
                     />
                   </div>
 
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-8 py-3.5 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/25"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto px-8 py-3.5 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/25 disabled:opacity-50"
                   >
                     <Send size={16} />
-                    Send Message
+                    {isSubmitting ? "Sending..." : "Send Message"}
                   </button>
                 </form>
               )}

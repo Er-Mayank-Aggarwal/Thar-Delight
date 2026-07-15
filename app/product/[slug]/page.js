@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, ShoppingBag, Star, Shield, RotateCcw, Truck, Sparkles } from "lucide-react";
 import { getProductBySlug, getRelatedProducts } from "@/app/actions/product-actions";
+import { submitReview } from "@/app/actions/review-actions";
 import ProductCard from "../../components/ProductCard";
 import { useCart } from "../../context/CartContext";
 
@@ -21,6 +22,13 @@ export default function ProductDetail({ params }) {
   const [added, setAdded] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
 
+  // Review states
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       const p = await getProductBySlug(slug);
@@ -33,6 +41,35 @@ export default function ProductDetail({ params }) {
     }
     loadData();
   }, [slug]);
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmittingReview(true);
+    setReviewError("");
+    
+    const res = await submitReview({
+      productId: product.id,
+      rating: reviewRating,
+      comment: reviewComment
+    });
+
+    if (res.success) {
+      setReviewSuccess(true);
+      setReviewComment("");
+      setReviewRating(5);
+      // Optimistically add the review to the UI
+      setProduct(prev => ({
+        ...prev,
+        reviews: [
+          ...(prev.reviews || []),
+          { id: 'temp', rating: reviewRating, comment: reviewComment, user: { name: "You" }, createdAt: new Date().toISOString() }
+        ]
+      }));
+    } else {
+      setReviewError(res.error);
+    }
+    setIsSubmittingReview(false);
+  };
 
   if (loading) {
     return (
@@ -323,10 +360,63 @@ export default function ProductDetail({ params }) {
                           </div>
                         </div>
                         <p className="text-gray-600 text-sm">{review.comment}</p>
+                        <span className="text-[10px] text-gray-400 mt-2 block">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     ))}
                   </div>
                 )}
+
+                {/* Add Review Form */}
+                <div className="mt-10 pt-8 border-t border-brand-sand/60">
+                  <h4 className="font-serif text-lg text-brand-brown font-bold mb-4">Write a Review</h4>
+                  {reviewSuccess ? (
+                    <div className="p-4 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200">
+                      Thanks for your review!
+                    </div>
+                  ) : (
+                    <form onSubmit={handleReviewSubmit} className="space-y-4 max-w-lg">
+                      <div>
+                        <label className="block text-sm font-medium text-brand-brown mb-1">Rating</label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => setReviewRating(star)}
+                              className="focus:outline-none"
+                            >
+                              <Star
+                                size={24}
+                                className={star <= reviewRating ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-brand-brown mb-1">Review</label>
+                        <textarea
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          required
+                          rows={3}
+                          className="w-full px-4 py-2 border border-brand-sand rounded-lg focus:outline-none focus:border-brand-gold text-sm"
+                          placeholder="What did you like about this product?"
+                        />
+                      </div>
+                      {reviewError && <p className="text-red-500 text-sm">{reviewError}</p>}
+                      <button
+                        type="submit"
+                        disabled={isSubmittingReview}
+                        className="px-6 py-2 bg-brand-brown text-white text-sm font-semibold rounded-lg hover:bg-brand-brown-light disabled:opacity-50"
+                      >
+                        {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                      </button>
+                    </form>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { placeOrder } from "../actions/checkout-actions";
+import { validateCoupon } from "../actions/coupon-validate-actions";
 import { getUserAddresses, getUserProfile } from "../actions/user-actions";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -23,7 +24,8 @@ export default function Checkout() {
     city: "",
     state: "",
     zipCode: "",
-    saveAddress: true
+    saveAddress: true,
+    couponCode: ""
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +37,12 @@ export default function Checkout() {
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
   const [isAddingNew, setIsAddingNew] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     async function loadUserData() {
@@ -131,6 +139,29 @@ export default function Checkout() {
     }
     
     setIsSubmitting(false);
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    
+    const res = await validateCoupon(couponInput, cartTotal);
+    if (res.success) {
+      setAppliedCoupon(res.couponCode);
+      setDiscountAmount(res.discount);
+      setFormData(prev => ({ ...prev, couponCode: res.couponCode }));
+      setCouponInput("");
+    } else {
+      setCouponError(res.error);
+    }
+    setIsApplyingCoupon(false);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+    setFormData(prev => ({ ...prev, couponCode: "" }));
   };
 
   if (success) {
@@ -342,19 +373,64 @@ export default function Checkout() {
               </div>
 
               <div className="space-y-3 pt-6 border-t border-brand-sand/40 text-sm text-gray-600">
+                {/* Coupon Section */}
+                <div className="pb-4 mb-2 border-b border-brand-sand/30">
+                  <h3 className="font-semibold text-brand-brown mb-2 text-xs uppercase tracking-wider">Discount Code</h3>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-2 rounded-lg text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{appliedCoupon}</span>
+                        <span className="text-emerald-600/80">-₹{discountAmount}</span>
+                      </div>
+                      <button type="button" onClick={handleRemoveCoupon} className="text-emerald-700 hover:text-emerald-900 font-medium">Remove</button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value)}
+                          placeholder="Enter coupon code"
+                          className="flex-1 px-3 py-2 border border-brand-sand rounded-lg text-sm focus:outline-none focus:border-brand-gold uppercase"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={!couponInput.trim() || isApplyingCoupon}
+                          className="px-4 py-2 bg-brand-brown text-white text-sm font-semibold rounded-lg hover:bg-brand-brown-light disabled:opacity-50 transition-colors"
+                        >
+                          {isApplyingCoupon ? "..." : "Apply"}
+                        </button>
+                      </div>
+                      {couponError && <p className="text-red-500 text-xs">{couponError}</p>}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-medium text-brand-brown">₹{cartTotal.toLocaleString("en-IN")}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>Discount</span>
+                    <span className="font-medium">-₹{discountAmount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>GST (18%)</span>
+                  <span className="font-medium text-brand-brown">₹{((cartTotal - discountAmount) * 0.18).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className={cartTotal > 500 ? "text-emerald-500 font-medium" : "text-brand-brown font-medium"}>
-                    {cartTotal > 500 ? "Free" : "₹50"}
+                  <span className={(cartTotal - discountAmount) > 500 ? "text-emerald-500 font-medium" : "text-brand-brown font-medium"}>
+                    {(cartTotal - discountAmount) > 500 ? "Free" : "₹50"}
                   </span>
                 </div>
                 <div className="flex justify-between pt-4 border-t border-dashed border-brand-sand/60 text-lg font-bold text-brand-brown">
                   <span>Total</span>
-                  <span>₹{(cartTotal + (cartTotal > 500 ? 0 : 50)).toLocaleString("en-IN")}</span>
+                  <span>₹{((cartTotal - discountAmount) + ((cartTotal - discountAmount) * 0.18) + ((cartTotal - discountAmount) > 500 ? 0 : 50)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>

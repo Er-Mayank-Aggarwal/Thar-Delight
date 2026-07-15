@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Mail, MapPin, Phone, ArrowRight } from "lucide-react";
+import { Mail, MapPin, Phone, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { subscribeToNewsletter } from "../actions/newsletter-actions";
 
 const footerLinks = {
   shop: [
@@ -25,6 +27,27 @@ const footerLinks = {
 };
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle"); // idle, loading, success, error
+  const [message, setMessage] = useState("");
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setStatus("loading");
+    const res = await subscribeToNewsletter(email);
+    
+    if (res.success) {
+      setStatus("success");
+      setMessage(res.message);
+      setEmail("");
+    } else {
+      setStatus("error");
+      setMessage(res.error);
+    }
+  };
+
   return (
     <footer className="bg-brand-brown text-white/80">
       {/* Newsletter Section */}
@@ -38,17 +61,31 @@ export default function Footer() {
                 </p>
               </div>
               <div className="flex justify-center md:justify-end w-full md:w-auto">
-                <div className="flex flex-col sm:flex-row w-full max-w-md items-stretch gap-3 sm:gap-0">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold transition-colors leading-normal w-full"
-                  />
-                  <button className="px-6 py-3 bg-brand-gold border border-transparent hover:bg-brand-gold-dark text-white font-semibold rounded-full sm:rounded-l-none sm:rounded-r-full transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/20 flex items-center justify-center gap-2 w-full sm:w-auto">
-                    Subscribe
-                    <ArrowRight size={16} />
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row w-full max-w-md items-stretch gap-3 sm:gap-0">
+                  <div className="flex-1 relative">
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className={`flex-1 px-5 py-3 bg-white/10 border ${status === 'error' ? 'border-red-500' : 'border-white/20'} rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold transition-colors leading-normal w-full`}
+                    />
+                    {message && (
+                      <span className={`absolute -bottom-6 left-5 text-xs ${status === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {message}
+                      </span>
+                    )}
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={status === "loading"}
+                    className="px-6 py-3 bg-brand-gold border border-transparent hover:bg-brand-gold-dark text-white font-semibold rounded-full sm:rounded-l-none sm:rounded-r-full transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/20 flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50"
+                  >
+                    {status === "loading" ? "Subscribing..." : status === "success" ? <CheckCircle2 size={16} /> : "Subscribe"}
+                    {status !== "success" && status !== "loading" && <ArrowRight size={16} />}
                   </button>
-                </div>
+                </form>
               </div>
             </div>
           </div>

@@ -1,9 +1,4 @@
 import { NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-
-const SECRET = new TextEncoder().encode(
-  process.env.SESSION_SECRET || "fallback-dev-secret-change-in-production"
-);
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -13,29 +8,36 @@ export async function middleware(request) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get("user_session")?.value;
-
-  // No session → redirect to login
-  if (!token) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/account";
-    url.searchParams.set("error", "Please log in to access the admin panel.");
-    return NextResponse.redirect(url);
-  }
-
+  // Use Better Auth's session API to verify the user
+  // We fetch the session from the auth API using the request cookies
   try {
-    // Verify JWT
-    const { payload } = await jwtVerify(token, SECRET);
+    const sessionResponse = await fetch(
+      `${request.nextUrl.origin}/api/auth/get-session`,
+      {
+        headers: {
+          cookie: request.headers.get("cookie") || "",
+        },
+      }
+    );
 
-    if (!payload.userId) {
-      throw new Error("Invalid session");
+    if (!sessionResponse.ok) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/account";
+      url.searchParams.set("error", "Please log in to access the admin panel.");
+      return NextResponse.redirect(url);
     }
 
-    // Fetch user role from API by reading from DB via edge-compatible fetch
-    // Since we can't use Prisma in edge middleware, we embed the role in the JWT.
-    // For now, we'll check if the role is embedded in the token payload.
-    // The createSession function will be updated to include the role.
-    const role = payload.role;
+    const session = await sessionResponse.json();
+
+    if (!session?.user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/account";
+      url.searchParams.set("error", "Please log in to access the admin panel.");
+      return NextResponse.redirect(url);
+    }
+
+    // Check role — Better Auth stores it on the user object
+    const role = session.user.role;
 
     if (role !== "ADMIN" && role !== "OWNER") {
       const url = request.nextUrl.clone();
@@ -46,7 +48,7 @@ export async function middleware(request) {
 
     return NextResponse.next();
   } catch {
-    // Invalid/expired token → redirect to login
+    // Error fetching session → redirect to login
     const url = request.nextUrl.clone();
     url.pathname = "/account";
     url.searchParams.set("error", "Session expired. Please log in again.");

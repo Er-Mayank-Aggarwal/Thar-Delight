@@ -4,8 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import ProductCard from "../components/ProductCard";
-import { getAllProducts } from "@/app/actions/product-actions";
-import { categories } from "../data/categories";
+import { getAllProducts, getAllCategories } from "@/app/actions/product-actions";
 import { Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
 function ShopContent() {
@@ -18,11 +17,13 @@ function ShopContent() {
   const [priceRange, setPriceRange] = useState(1200); // Max price
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
 
   useEffect(() => {
-    getAllProducts().then(data => {
-      setAllProducts(data);
-      setFilteredProducts(data);
+    Promise.all([getAllProducts(), getAllCategories()]).then(([productsData, categoriesData]) => {
+      setAllProducts(productsData);
+      setFilteredProducts(productsData);
+      setDbCategories(categoriesData);
     });
   }, []);
 
@@ -37,9 +38,21 @@ function ShopContent() {
     if (allProducts.length === 0) return;
     let result = [...allProducts];
 
+    // Filter by Search Query
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.shortDescription?.toLowerCase().includes(q) ||
+          p.category?.name?.toLowerCase().includes(q)
+      );
+    }
+
     // Filter by Category
     if (selectedCategory !== "all") {
-      result = result.filter((p) => p.category === selectedCategory);
+      result = result.filter((p) => p.category?.slug === selectedCategory);
     }
 
     // Filter by Price
@@ -105,7 +118,9 @@ function ShopContent() {
                     All Categories ({allProducts.length})
                   </button>
                 </li>
-                {categories.map((cat) => (
+                {dbCategories.map((cat) => {
+                  const productCount = allProducts.filter(p => p.category?.slug === cat.slug).length;
+                  return (
                   <li key={cat.id}>
                     <button
                       onClick={() => handleCategorySelect(cat.slug)}
@@ -116,11 +131,12 @@ function ShopContent() {
                     >
                       <span>{cat.name}</span>
                       <span className={selectedCategory === cat.slug ? "text-white/80" : "text-gray-400 text-xs"}>
-                        ({cat.productCount})
+                        ({productCount})
                       </span>
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
 

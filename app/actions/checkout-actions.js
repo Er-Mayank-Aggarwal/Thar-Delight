@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { placeOrderSchema } from "@/lib/validations";
 import { checkoutLimiter } from "@/lib/rateLimit";
+import { validateCoupon } from "./coupon-validate-actions";
 
 export async function placeOrder(formData) {
   try {
@@ -60,10 +61,24 @@ export async function placeOrder(formData) {
 
     // 3. Calculate Totals (server-side, never trust client)
     const subtotal = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    const tax = subtotal * 0.18; // 18% GST
-    const deliveryCharge = subtotal > 500 ? 0 : 50;
-    const discount = 0;
-    const total = subtotal + tax + deliveryCharge - discount;
+    
+    let discount = 0;
+    if (formData.couponCode) {
+      const couponRes = await validateCoupon(formData.couponCode, subtotal);
+      if (couponRes.success) {
+        discount = couponRes.discount;
+        
+        // Update coupon usage count
+        await prisma.coupon.update({
+          where: { code: formData.couponCode.toUpperCase() },
+          data: { timesUsed: { increment: 1 } }
+        });
+      }
+    }
+
+    const tax = (subtotal - discount) * 0.18; // 18% GST on discounted subtotal
+    const deliveryCharge = (subtotal - discount) > 500 ? 0 : 50;
+    const total = subtotal - discount + tax + deliveryCharge;
 
     // 4. Handle Address
     const user = await prisma.user.findUnique({ where: { id: userId } });
