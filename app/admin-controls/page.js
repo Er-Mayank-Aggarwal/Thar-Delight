@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import {
   IndianRupee,
@@ -354,3 +355,4 @@ export default async function AdminDashboard() {
     </div>
   );
 }
+
