@@ -63,12 +63,12 @@ export default function CartDrawer({ isOpen, onClose }) {
             cart.map((item) => (
               <div key={item.id} className="flex gap-4 bg-white p-3 rounded-2xl border border-brand-sand/30 shadow-sm relative group">
                 <div className="relative w-20 h-20 bg-brand-cream rounded-xl overflow-hidden flex-shrink-0">
-                  <Image
-                    src={item.image || "/images/placeholder.png"}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
+                    <Image
+                      src={item.image || item.images?.[0]?.url || "/images/placeholder.png"}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
                 </div>
                 
                 <div className="flex-1 flex flex-col justify-between py-1">

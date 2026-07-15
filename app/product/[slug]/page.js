@@ -131,7 +131,7 @@ export default function ProductDetail({ params }) {
           {/* Left Column: Image Display */}
           <div className="lg:col-span-6 relative aspect-square rounded-2xl overflow-hidden bg-brand-cream border border-brand-sand/65">
             <Image
-              src={product.image}
+              src={product.image || product.images?.[0]?.url || "/images/placeholder.png"}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 hover:scale-105"
