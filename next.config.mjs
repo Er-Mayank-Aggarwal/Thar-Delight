@@ -1,3 +1,4 @@
+console.log("NETLIFY ENV LOGGING:", process.env);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
