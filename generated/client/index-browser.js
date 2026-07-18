@@ -336,6 +336,7 @@ exports.Prisma.ContactMessageScalarFieldEnum = {
   name: 'name',
   email: 'email',
   phone: 'phone',
+  subject: 'subject',
   message: 'message',
   createdAt: 'createdAt'
 };

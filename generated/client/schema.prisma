@@ -381,6 +381,8 @@ model ContactMessage {
 
   phone String?
 
+  subject String?
+
   message String
 
   createdAt DateTime @default(now())

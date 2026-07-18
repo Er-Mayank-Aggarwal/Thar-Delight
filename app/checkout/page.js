@@ -128,7 +128,12 @@ export default function Checkout() {
     setIsSubmitting(true);
     setError(null);
 
-    const res = await placeOrder(formData);
+    const payload = {
+      ...formData,
+      addressId: isAddingNew ? undefined : selectedAddressId
+    };
+
+    const res = await placeOrder(payload);
 
     if (res.success) {
       setSuccess(true);

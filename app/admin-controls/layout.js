@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ArrowLeft,
+  MessageSquare,
 } from "lucide-react";
 
 const navItems = [
@@ -51,6 +52,11 @@ const navItems = [
     label: "Reviews",
     href: "/admin-controls/reviews",
     icon: Star,
+  },
+  {
+    label: "Messages",
+    href: "/admin-controls/messages",
+    icon: MessageSquare,
   },
 ];
 

@@ -8,6 +8,7 @@ export default function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: "",
   });
@@ -19,9 +20,16 @@ export default function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    
+
+    // Validate phone number: exactly 10 digits, cannot start with 0
+    if (!/^[1-9][0-9]{9}$/.test(formData.phone)) {
+      setError("Please enter a valid 10-digit phone number that doesn't start with 0.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const res = await submitContactMessage(formData);
-    
+
     if (res.success) {
       setSubmitted(true);
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -34,7 +42,7 @@ export default function Contact() {
   return (
     <div className="bg-brand-warm-white min-h-screen py-10 sm:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center mb-16">
           <span className="text-brand-gold text-sm font-semibold uppercase tracking-[0.2em] block">
@@ -49,11 +57,11 @@ export default function Contact() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          
+
           {/* Contact Details Column */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl p-7 border border-brand-sand/60 space-y-8">
-              
+
               <div className="flex gap-4">
                 <div className="w-10 h-10 rounded-xl bg-brand-gold/10 text-brand-gold flex items-center justify-center flex-shrink-0">
                   <MapPin size={20} />
@@ -135,7 +143,7 @@ export default function Contact() {
                       <input
                         type="text"
                         required
-                        placeholder="e.g. Rahul Sharma"
+                        placeholder="e.g. Mayank Aggarwal"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors text-sm"
@@ -146,12 +154,25 @@ export default function Contact() {
                       <input
                         type="email"
                         required
-                        placeholder="e.g. rahul@example.com"
+                        placeholder="e.g. Mayank@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors text-sm"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-brand-brown-light">Phone Number</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="e.g. 9876543210"
+                      maxLength={10}
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\\D/g, '') })}
+                      className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors text-sm"
+                    />
                   </div>
 
                   <div className="space-y-2">

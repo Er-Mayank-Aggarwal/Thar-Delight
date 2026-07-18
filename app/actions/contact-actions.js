@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function submitContactMessage(data) {
   try {
-    const { name, email, subject, message } = data;
+    const { name, email, phone, subject, message } = data;
     
     if (!name || !email || !message) {
       return { success: false, error: "Name, email, and message are required" };
@@ -14,7 +14,8 @@ export async function submitContactMessage(data) {
       data: {
         name,
         email,
-        phone: subject, // Storing subject in phone field since schema doesn't have subject
+        phone,
+        subject,
         message,
       }
     });

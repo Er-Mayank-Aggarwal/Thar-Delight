@@ -125,3 +125,21 @@ export async function updateCustomerRole(userId, newRole) {
     return { success: false, error: "Failed to update role" };
   }
 }
+
+export async function getAdminContactMessages() {
+  await requireAdmin();
+
+  const messages = await prisma.contactMessage.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+
+  return messages.map(m => ({
+    id: m.id,
+    name: m.name,
+    email: m.email,
+    phone: m.phone || "N/A",
+    subject: m.subject || "N/A",
+    message: m.message,
+    date: m.createdAt.toISOString()
+  }));
+}

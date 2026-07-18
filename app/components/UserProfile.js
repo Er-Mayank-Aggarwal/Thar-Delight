@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { User, MapPin, Package, LogOut, Camera, Edit2, AlertCircle, Trash2, CheckCircle2, Plus } from "lucide-react";
-import { logoutUser } from "@/app/actions/auth-actions";
+import { signOut } from "@/lib/auth-client";
 import { updateUserProfile, addAddress, deleteAddress, setDefaultAddress } from "@/app/actions/user-actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -70,7 +70,7 @@ export default function UserProfile({ user, orders, addresses }) {
   };
 
   const handleLogout = async () => {
-    await logoutUser();
+    await signOut();
     router.refresh();
   };
 

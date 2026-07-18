@@ -83,32 +83,48 @@ export async function placeOrder(formData) {
     // 4. Handle Address
     const user = await prisma.user.findUnique({ where: { id: userId } });
     
-    const address = await prisma.address.create({
-      data: {
-        userId,
-        fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim() || user.name || "Customer",
-        phone: parsed.data.phone || user.phone || "",
-        addressLine1: parsed.data.address,
-        city: parsed.data.city,
-        state: parsed.data.state,
-        country: "India",
-        pincode: parsed.data.zipCode,
-        isDefault: parsed.data.saveAddress || false
-      }
-    });
+    let finalAddressId;
 
-    if (parsed.data.saveAddress) {
-      await prisma.address.updateMany({
-        where: { userId, id: { not: address.id } },
-        data: { isDefault: false }
+    if (parsed.data.addressId) {
+      // User selected a saved address, verify it belongs to them
+      const existingAddress = await prisma.address.findFirst({
+        where: { id: parsed.data.addressId, userId }
       });
+      
+      if (!existingAddress) {
+        return { success: false, error: "Selected address not found or invalid." };
+      }
+      finalAddressId = existingAddress.id;
+    } else {
+      // Create a new address
+      const address = await prisma.address.create({
+        data: {
+          userId,
+          fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim() || user.name || "Customer",
+          phone: parsed.data.phone || user.phone || "",
+          addressLine1: parsed.data.address,
+          city: parsed.data.city,
+          state: parsed.data.state,
+          country: "India",
+          pincode: parsed.data.zipCode,
+          isDefault: parsed.data.saveAddress || false
+        }
+      });
+      finalAddressId = address.id;
+
+      if (parsed.data.saveAddress) {
+        await prisma.address.updateMany({
+          where: { userId, id: { not: address.id } },
+          data: { isDefault: false }
+        });
+      }
     }
 
     // 5. Create the Order
     const order = await prisma.order.create({
       data: {
         userId: userId,
-        addressId: address.id,
+        addressId: finalAddressId,
         orderStatus: "PENDING",
         paymentStatus: "PENDING",
         subtotal,

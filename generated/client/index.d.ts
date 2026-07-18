@@ -26759,6 +26759,7 @@ export namespace Prisma {
     name: string | null
     email: string | null
     phone: string | null
+    subject: string | null
     message: string | null
     createdAt: Date | null
   }
@@ -26768,6 +26769,7 @@ export namespace Prisma {
     name: string | null
     email: string | null
     phone: string | null
+    subject: string | null
     message: string | null
     createdAt: Date | null
   }
@@ -26777,6 +26779,7 @@ export namespace Prisma {
     name: number
     email: number
     phone: number
+    subject: number
     message: number
     createdAt: number
     _all: number
@@ -26788,6 +26791,7 @@ export namespace Prisma {
     name?: true
     email?: true
     phone?: true
+    subject?: true
     message?: true
     createdAt?: true
   }
@@ -26797,6 +26801,7 @@ export namespace Prisma {
     name?: true
     email?: true
     phone?: true
+    subject?: true
     message?: true
     createdAt?: true
   }
@@ -26806,6 +26811,7 @@ export namespace Prisma {
     name?: true
     email?: true
     phone?: true
+    subject?: true
     message?: true
     createdAt?: true
     _all?: true
@@ -26888,6 +26894,7 @@ export namespace Prisma {
     name: string
     email: string
     phone: string | null
+    subject: string | null
     message: string
     createdAt: Date
     _count: ContactMessageCountAggregateOutputType | null
@@ -26914,6 +26921,7 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     phone?: boolean
+    subject?: boolean
     message?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["contactMessage"]>
@@ -26923,6 +26931,7 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     phone?: boolean
+    subject?: boolean
     message?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["contactMessage"]>
@@ -26932,6 +26941,7 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     phone?: boolean
+    subject?: boolean
     message?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["contactMessage"]>
@@ -26941,11 +26951,12 @@ export namespace Prisma {
     name?: boolean
     email?: boolean
     phone?: boolean
+    subject?: boolean
     message?: boolean
     createdAt?: boolean
   }
 
-  export type ContactMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "message" | "createdAt", ExtArgs["result"]["contactMessage"]>
+  export type ContactMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "email" | "phone" | "subject" | "message" | "createdAt", ExtArgs["result"]["contactMessage"]>
 
   export type $ContactMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ContactMessage"
@@ -26955,6 +26966,7 @@ export namespace Prisma {
       name: string
       email: string
       phone: string | null
+      subject: string | null
       message: string
       createdAt: Date
     }, ExtArgs["result"]["contactMessage"]>
@@ -27384,6 +27396,7 @@ export namespace Prisma {
     readonly name: FieldRef<"ContactMessage", 'String'>
     readonly email: FieldRef<"ContactMessage", 'String'>
     readonly phone: FieldRef<"ContactMessage", 'String'>
+    readonly subject: FieldRef<"ContactMessage", 'String'>
     readonly message: FieldRef<"ContactMessage", 'String'>
     readonly createdAt: FieldRef<"ContactMessage", 'DateTime'>
   }
@@ -29179,6 +29192,7 @@ export namespace Prisma {
     name: 'name',
     email: 'email',
     phone: 'phone',
+    subject: 'subject',
     message: 'message',
     createdAt: 'createdAt'
   };
@@ -30809,6 +30823,7 @@ export namespace Prisma {
     name?: StringFilter<"ContactMessage"> | string
     email?: StringFilter<"ContactMessage"> | string
     phone?: StringNullableFilter<"ContactMessage"> | string | null
+    subject?: StringNullableFilter<"ContactMessage"> | string | null
     message?: StringFilter<"ContactMessage"> | string
     createdAt?: DateTimeFilter<"ContactMessage"> | Date | string
   }
@@ -30818,6 +30833,7 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
     message?: SortOrder
     createdAt?: SortOrder
   }
@@ -30830,6 +30846,7 @@ export namespace Prisma {
     name?: StringFilter<"ContactMessage"> | string
     email?: StringFilter<"ContactMessage"> | string
     phone?: StringNullableFilter<"ContactMessage"> | string | null
+    subject?: StringNullableFilter<"ContactMessage"> | string | null
     message?: StringFilter<"ContactMessage"> | string
     createdAt?: DateTimeFilter<"ContactMessage"> | Date | string
   }, "id">
@@ -30839,6 +30856,7 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrderInput | SortOrder
+    subject?: SortOrderInput | SortOrder
     message?: SortOrder
     createdAt?: SortOrder
     _count?: ContactMessageCountOrderByAggregateInput
@@ -30854,6 +30872,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"ContactMessage"> | string
     email?: StringWithAggregatesFilter<"ContactMessage"> | string
     phone?: StringNullableWithAggregatesFilter<"ContactMessage"> | string | null
+    subject?: StringNullableWithAggregatesFilter<"ContactMessage"> | string | null
     message?: StringWithAggregatesFilter<"ContactMessage"> | string
     createdAt?: DateTimeWithAggregatesFilter<"ContactMessage"> | Date | string
   }
@@ -32489,6 +32508,7 @@ export namespace Prisma {
     name: string
     email: string
     phone?: string | null
+    subject?: string | null
     message: string
     createdAt?: Date | string
   }
@@ -32498,6 +32518,7 @@ export namespace Prisma {
     name: string
     email: string
     phone?: string | null
+    subject?: string | null
     message: string
     createdAt?: Date | string
   }
@@ -32507,6 +32528,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32516,6 +32538,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32525,6 +32548,7 @@ export namespace Prisma {
     name: string
     email: string
     phone?: string | null
+    subject?: string | null
     message: string
     createdAt?: Date | string
   }
@@ -32534,6 +32558,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32543,6 +32568,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     phone?: NullableStringFieldUpdateOperationsInput | string | null
+    subject?: NullableStringFieldUpdateOperationsInput | string | null
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33861,6 +33887,7 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
+    subject?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
   }
@@ -33870,6 +33897,7 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
+    subject?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
   }
@@ -33879,6 +33907,7 @@ export namespace Prisma {
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
+    subject?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
   }
