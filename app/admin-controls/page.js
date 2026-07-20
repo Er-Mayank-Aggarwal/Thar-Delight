@@ -63,16 +63,31 @@ const defaultStatus = {
 };
 
 export default async function AdminDashboard() {
-  const products = await getAllProducts();
-  const inventory = await prisma.inventory.findMany({
-    include: { product: { select: { name: true } } }
-  });
-
-  const recentDbOrders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    include: { user: true }
-  });
+  const [
+    products,
+    inventory,
+    recentDbOrders,
+    revenueAgg,
+    totalOrders,
+    totalCustomers,
+    pendingOrders,
+  ] = await Promise.all([
+    getAllProducts(),
+    prisma.inventory.findMany({
+      include: { product: { select: { name: true } } },
+    }),
+    prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { user: true },
+    }),
+    prisma.order.aggregate({ _sum: { total: true } }),
+    prisma.order.count(),
+    prisma.user.count(),
+    prisma.order.count({
+      where: { orderStatus: { in: ["PENDING", "CONFIRMED"] } },
+    }),
+  ]);
 
   const recentOrders = recentDbOrders.map(order => ({
     id: order.id.slice(0, 8).toUpperCase(),
@@ -89,16 +104,10 @@ export default async function AdminDashboard() {
     .filter((i) => i.quantity <= i.lowStockThreshold)
     .map((i) => ({ ...i, productName: i.product.name }));
 
-  const revenueAgg = await prisma.order.aggregate({ _sum: { total: true } });
   const totalRevenue = revenueAgg._sum.total || 0;
   
-  const totalOrders = await prisma.order.count();
   const totalProducts = products.length;
-  const totalCustomers = await prisma.user.count();
   
-  const pendingOrders = await prisma.order.count({ 
-    where: { orderStatus: { in: ["PENDING", "CONFIRMED"] } } 
-  });
   const pendingReviews = 0; // isApproved was removed from DB schema
 
   const stats = [
