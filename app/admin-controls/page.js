@@ -64,7 +64,7 @@ const defaultStatus = {
 
 export default async function AdminDashboard() {
   const [
-    products,
+    totalProducts,
     inventory,
     recentDbOrders,
     revenueAgg,
@@ -72,8 +72,9 @@ export default async function AdminDashboard() {
     totalCustomers,
     pendingOrders,
   ] = await Promise.all([
-    getAllProducts(),
+    prisma.product.count(),
     prisma.inventory.findMany({
+      where: { quantity: { lte: 10 } },
       include: { product: { select: { name: true } } },
     }),
     prisma.order.findMany({
@@ -105,8 +106,6 @@ export default async function AdminDashboard() {
     .map((i) => ({ ...i, productName: i.product.name }));
 
   const totalRevenue = revenueAgg._sum.total || 0;
-  
-  const totalProducts = products.length;
   
   const pendingReviews = 0; // isApproved was removed from DB schema
 
