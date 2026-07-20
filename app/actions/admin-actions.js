@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { orderStatusSchema } from "@/lib/validations";
+import { revalidatePath } from "next/cache";
 
 export async function getAdminOrders() {
   await requireAdmin();
@@ -79,10 +80,14 @@ export async function getAdminReviews() {
 export async function approveReview(id) {
   await requireAdmin();
   try {
-    await prisma.review.update({
+    const review = await prisma.review.update({
       where: { id },
-      data: { isPublished: true }
+      data: { isPublished: true },
+      include: { product: true }
     });
+    if (review.product && review.product.slug) {
+      revalidatePath(`/product/${review.product.slug}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Failed to approve review:", error);
@@ -93,9 +98,13 @@ export async function approveReview(id) {
 export async function deleteReview(id) {
   await requireAdmin();
   try {
-    await prisma.review.delete({
-      where: { id }
+    const review = await prisma.review.delete({
+      where: { id },
+      include: { product: true }
     });
+    if (review.product && review.product.slug) {
+      revalidatePath(`/product/${review.product.slug}`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Failed to delete review:", error);

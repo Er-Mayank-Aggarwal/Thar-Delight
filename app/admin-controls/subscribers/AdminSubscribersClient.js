@@ -59,7 +59,8 @@ export default function AdminSubscribersClient({ initialSubscribers }) {
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-brand-sand/30 overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-brand-cream/50 border-b border-brand-sand/40 text-brand-brown font-semibold">
                 <tr>
@@ -74,11 +75,11 @@ export default function AdminSubscribersClient({ initialSubscribers }) {
                       <div className="w-8 h-8 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold">
                         <Mail size={14} />
                       </div>
-                      {sub.email}
+                      <span className="truncate">{sub.email}</span>
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-gray-400" />
+                        <Calendar size={14} className="text-gray-400 flex-shrink-0" />
                         {new Date(sub.date).toLocaleDateString("en-IN", {
                           day: "numeric", month: "short", year: "numeric"
                         })}
@@ -88,6 +89,30 @@ export default function AdminSubscribersClient({ initialSubscribers }) {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-brand-sand/30">
+            {filtered.map((sub) => (
+              <div key={sub.id} className="p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold flex-shrink-0">
+                    <Mail size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800 text-sm truncate">
+                      {sub.email}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                      <Calendar size={12} className="text-gray-400" />
+                      {new Date(sub.date).toLocaleDateString("en-IN", {
+                        day: "numeric", month: "short", year: "numeric"
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -75,13 +75,17 @@ const statusFlow = ["pending", "confirmed", "packed", "shipped", "delivered"];
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [sortBy, setSortBy] = useState("newest"); // newest, oldest, oldest-pending
 
   useEffect(() => {
-    getAdminOrders().then(setOrders);
+    getAdminOrders().then((data) => {
+      setOrders(data);
+      setIsLoading(false);
+    });
   }, []);
 
   // Filter orders
@@ -397,7 +401,12 @@ export default function AdminOrders() {
           })}
         </div>
 
-        {filteredOrders.length === 0 && (
+        {isLoading ? (
+          <div className="text-center py-16 px-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-brown mx-auto mb-4"></div>
+            <p className="text-gray-500 font-medium">Loading orders...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
           <div className="text-center py-16 px-4">
             <Package size={48} className="mx-auto text-gray-200 mb-4" />
             <p className="text-gray-500 font-medium">No orders found</p>
@@ -405,7 +414,7 @@ export default function AdminOrders() {
               Try adjusting your search or filters
             </p>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Order Detail Modal */}
