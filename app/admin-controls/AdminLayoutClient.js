@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import AutoRefresh from "./AutoRefresh";
 import {
   LayoutDashboard,
   Package,
@@ -72,6 +73,7 @@ export default function AdminLayoutClient({ children }) {
 
   return (
     <div className="min-h-screen bg-[#f5f1ec] flex">
+      <AutoRefresh interval={pathname === "/admin-controls/orders" ? 30000 : 60000} />
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
