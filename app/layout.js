@@ -1,4 +1,5 @@
 import { Inter, Lora, Dancing_Script } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import LayoutShell from "./components/LayoutShell";
 
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
       className={`${inter.variable} ${lora.variable} ${dancingScript.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <NextTopLoader color="#d4af37" showSpinner={false} />
         <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
