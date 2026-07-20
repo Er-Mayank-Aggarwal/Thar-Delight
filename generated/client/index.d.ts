@@ -22573,6 +22573,7 @@ export namespace Prisma {
     productId: string | null
     rating: number | null
     comment: string | null
+    isPublished: boolean | null
     createdAt: Date | null
   }
 
@@ -22582,6 +22583,7 @@ export namespace Prisma {
     productId: string | null
     rating: number | null
     comment: string | null
+    isPublished: boolean | null
     createdAt: Date | null
   }
 
@@ -22591,6 +22593,7 @@ export namespace Prisma {
     productId: number
     rating: number
     comment: number
+    isPublished: number
     createdAt: number
     _all: number
   }
@@ -22610,6 +22613,7 @@ export namespace Prisma {
     productId?: true
     rating?: true
     comment?: true
+    isPublished?: true
     createdAt?: true
   }
 
@@ -22619,6 +22623,7 @@ export namespace Prisma {
     productId?: true
     rating?: true
     comment?: true
+    isPublished?: true
     createdAt?: true
   }
 
@@ -22628,6 +22633,7 @@ export namespace Prisma {
     productId?: true
     rating?: true
     comment?: true
+    isPublished?: true
     createdAt?: true
     _all?: true
   }
@@ -22724,6 +22730,7 @@ export namespace Prisma {
     productId: string
     rating: number
     comment: string | null
+    isPublished: boolean
     createdAt: Date
     _count: ReviewCountAggregateOutputType | null
     _avg: ReviewAvgAggregateOutputType | null
@@ -22752,6 +22759,7 @@ export namespace Prisma {
     productId?: boolean
     rating?: boolean
     comment?: boolean
+    isPublished?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -22763,6 +22771,7 @@ export namespace Prisma {
     productId?: boolean
     rating?: boolean
     comment?: boolean
+    isPublished?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -22774,6 +22783,7 @@ export namespace Prisma {
     productId?: boolean
     rating?: boolean
     comment?: boolean
+    isPublished?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -22785,10 +22795,11 @@ export namespace Prisma {
     productId?: boolean
     rating?: boolean
     comment?: boolean
+    isPublished?: boolean
     createdAt?: boolean
   }
 
-  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "productId" | "rating" | "comment" | "createdAt", ExtArgs["result"]["review"]>
+  export type ReviewOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "productId" | "rating" | "comment" | "isPublished" | "createdAt", ExtArgs["result"]["review"]>
   export type ReviewInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     product?: boolean | ProductDefaultArgs<ExtArgs>
@@ -22814,6 +22825,7 @@ export namespace Prisma {
       productId: string
       rating: number
       comment: string | null
+      isPublished: boolean
       createdAt: Date
     }, ExtArgs["result"]["review"]>
     composites: {}
@@ -23245,6 +23257,7 @@ export namespace Prisma {
     readonly productId: FieldRef<"Review", 'String'>
     readonly rating: FieldRef<"Review", 'Int'>
     readonly comment: FieldRef<"Review", 'String'>
+    readonly isPublished: FieldRef<"Review", 'Boolean'>
     readonly createdAt: FieldRef<"Review", 'DateTime'>
   }
     
@@ -29150,6 +29163,7 @@ export namespace Prisma {
     productId: 'productId',
     rating: 'rating',
     comment: 'comment',
+    isPublished: 'isPublished',
     createdAt: 'createdAt'
   };
 
@@ -30604,6 +30618,7 @@ export namespace Prisma {
     productId?: StringFilter<"Review"> | string
     rating?: IntFilter<"Review"> | number
     comment?: StringNullableFilter<"Review"> | string | null
+    isPublished?: BoolFilter<"Review"> | boolean
     createdAt?: DateTimeFilter<"Review"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -30615,6 +30630,7 @@ export namespace Prisma {
     productId?: SortOrder
     rating?: SortOrder
     comment?: SortOrderInput | SortOrder
+    isPublished?: SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
     product?: ProductOrderByWithRelationInput
@@ -30629,6 +30645,7 @@ export namespace Prisma {
     productId?: StringFilter<"Review"> | string
     rating?: IntFilter<"Review"> | number
     comment?: StringNullableFilter<"Review"> | string | null
+    isPublished?: BoolFilter<"Review"> | boolean
     createdAt?: DateTimeFilter<"Review"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
@@ -30640,6 +30657,7 @@ export namespace Prisma {
     productId?: SortOrder
     rating?: SortOrder
     comment?: SortOrderInput | SortOrder
+    isPublished?: SortOrder
     createdAt?: SortOrder
     _count?: ReviewCountOrderByAggregateInput
     _avg?: ReviewAvgOrderByAggregateInput
@@ -30657,6 +30675,7 @@ export namespace Prisma {
     productId?: StringWithAggregatesFilter<"Review"> | string
     rating?: IntWithAggregatesFilter<"Review"> | number
     comment?: StringNullableWithAggregatesFilter<"Review"> | string | null
+    isPublished?: BoolWithAggregatesFilter<"Review"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Review"> | Date | string
   }
 
@@ -32294,6 +32313,7 @@ export namespace Prisma {
     id?: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutReviewsInput
     product: ProductCreateNestedOneWithoutReviewsInput
@@ -32305,6 +32325,7 @@ export namespace Prisma {
     productId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -32312,6 +32333,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutReviewsNestedInput
     product?: ProductUpdateOneRequiredWithoutReviewsNestedInput
@@ -32323,6 +32345,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -32332,6 +32355,7 @@ export namespace Prisma {
     productId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -32339,6 +32363,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -32348,6 +32373,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33774,6 +33800,7 @@ export namespace Prisma {
     productId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    isPublished?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -33787,6 +33814,7 @@ export namespace Prisma {
     productId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    isPublished?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -33796,6 +33824,7 @@ export namespace Prisma {
     productId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    isPublished?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -35499,6 +35528,7 @@ export namespace Prisma {
     id?: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
     product: ProductCreateNestedOneWithoutReviewsInput
   }
@@ -35508,6 +35538,7 @@ export namespace Prisma {
     productId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -35743,6 +35774,7 @@ export namespace Prisma {
     productId?: StringFilter<"Review"> | string
     rating?: IntFilter<"Review"> | number
     comment?: StringNullableFilter<"Review"> | string | null
+    isPublished?: BoolFilter<"Review"> | boolean
     createdAt?: DateTimeFilter<"Review"> | Date | string
   }
 
@@ -36338,6 +36370,7 @@ export namespace Prisma {
     id?: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutReviewsInput
   }
@@ -36347,6 +36380,7 @@ export namespace Prisma {
     userId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -38292,6 +38326,7 @@ export namespace Prisma {
     productId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -38399,6 +38434,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     product?: ProductUpdateOneRequiredWithoutReviewsNestedInput
   }
@@ -38408,6 +38444,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -38416,6 +38453,7 @@ export namespace Prisma {
     productId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -38689,6 +38727,7 @@ export namespace Prisma {
     userId: string
     rating: number
     comment?: string | null
+    isPublished?: boolean
     createdAt?: Date | string
   }
 
@@ -38737,6 +38776,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutReviewsNestedInput
   }
@@ -38746,6 +38786,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -38754,6 +38795,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     comment?: NullableStringFieldUpdateOperationsInput | string | null
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

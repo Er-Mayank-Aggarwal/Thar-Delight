@@ -36,6 +36,10 @@ export async function createCoupon(data) {
     });
 
     revalidatePath("/admin-controls/coupons");
+
+    //Because of this single line of code, the moment the admin successfully creates a coupon, Next.js clears the cache. 
+    // The admin's dashboard will automatically fetch the fresh data from the database, 
+    // and the new coupon will appear on the screen instantly! 
     return { success: true, data: coupon };
   } catch (error) {
     console.error("Failed to create coupon:", error);

@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 export async function submitContactMessage(data) {
   try {
     const { name, email, phone, subject, message } = data;
-    
-    if (!name || !email || !message) {
-      return { success: false, error: "Name, email, and message are required" };
+
+    if (!name || !email || !message || !phone || !subject) {
+      return { success: false, error: "All fields are required" };
     }
 
     await prisma.contactMessage.create({

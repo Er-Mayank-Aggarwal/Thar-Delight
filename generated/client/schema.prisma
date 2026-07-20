@@ -334,6 +334,8 @@ model Review {
 
   comment String?
 
+  isPublished Boolean @default(false)
+
   createdAt DateTime @default(now())
 }
 

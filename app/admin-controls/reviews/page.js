@@ -8,24 +8,38 @@ import {
   MessageSquare,
   ChevronDown,
 } from "lucide-react";
-import { getAdminReviews } from "@/app/actions/admin-actions";
+import { getAdminReviews, approveReview, deleteReview } from "@/app/actions/admin-actions";
 
 export default function AdminReviews() {
   const [reviews, setReviews] = useState([]);
   const [filterApproval, setFilterApproval] = useState("all"); // all, approved, pending
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
   useEffect(() => {
     getAdminReviews().then(setReviews);
   }, []);
 
-  const handleApprove = (id) => {
-    setReviews((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, isApproved: true } : r))
-    );
+  const handleApprove = async (id) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    const res = await approveReview(id);
+    if (res.success) {
+      setReviews((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, isApproved: true } : r))
+      );
+    }
+    setIsProcessing(false);
   };
 
-  const handleReject = (id) => {
-    setReviews((prev) => prev.filter((r) => r.id !== id));
+  const handleReject = async (id) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    const res = await deleteReview(id);
+    if (res.success) {
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+    }
+    setIsProcessing(false);
   };
 
   const filtered = reviews.filter((r) => {

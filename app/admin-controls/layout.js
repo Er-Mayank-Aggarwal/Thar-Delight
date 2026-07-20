@@ -15,6 +15,7 @@ import {
   X,
   ArrowLeft,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 
 const navItems = [
@@ -57,6 +58,11 @@ const navItems = [
     label: "Messages",
     href: "/admin-controls/messages",
     icon: MessageSquare,
+  },
+  {
+    label: "Subscribers",
+    href: "/admin-controls/subscribers",
+    icon: Mail,
   },
 ];
 

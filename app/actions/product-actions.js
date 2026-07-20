@@ -11,6 +11,7 @@ export async function getAllProducts() {
       inventory: true,
       images: { where: { isPrimary: true }, take: 1 },
       category: true,
+      reviews: { where: { isPublished: true }, select: { rating: true } },
     }
   });
 }
@@ -23,7 +24,7 @@ export async function getFeaturedProducts() {
     include: {
       inventory: true,
       images: { where: { isPrimary: true }, take: 1 },
-      category: true,
+      reviews: { where: { isPublished: true }, select: { rating: true } },
     }
   });
 }
@@ -35,7 +36,7 @@ export async function getProductBySlug(slug) {
       inventory: true,
       images: true,
       category: true,
-      reviews: { include: { user: { select: { name: true } } } }
+      reviews: { where: { isPublished: true }, include: { user: { select: { name: true } } } }
     }
   });
 }
@@ -50,7 +51,7 @@ export async function getRelatedProducts(categoryId, excludeId, limit = 3) {
     include: {
       inventory: true,
       images: { where: { isPrimary: true }, take: 1 },
-      category: true,
+      reviews: { where: { isPublished: true }, select: { rating: true } },
     }
   });
 }

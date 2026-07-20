@@ -334,6 +334,8 @@ model Review {
   rating Int
 
   comment String?
+  
+  isPublished Boolean @default(false)
 
   createdAt DateTime @default(now())
 }

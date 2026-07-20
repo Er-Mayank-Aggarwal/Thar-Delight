@@ -120,26 +120,28 @@ export async function addAddress(formData) {
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
 
-    const address = await prisma.address.create({
-      data: {
-        userId,
-        fullName: formData.fullName || user.name || "Customer",
-        phone: formData.phone || user.phone || "",
-        addressLine1: formData.street || formData.addressLine1,
-        city: parsed.data.city,
-        state: parsed.data.state,
-        country: formData.country || "India",
-        pincode: formData.zipCode || formData.pincode,
-        isDefault: formData.isDefault || false
+    await prisma.$transaction(async (tx) => {
+      const address = await tx.address.create({
+        data: {
+          userId,
+          fullName: formData.fullName || user.name || "Customer",
+          phone: formData.phone || user.phone || "",
+          addressLine1: formData.street || formData.addressLine1,
+          city: parsed.data.city,
+          state: parsed.data.state,
+          country: formData.country || "India",
+          pincode: formData.zipCode || formData.pincode,
+          isDefault: formData.isDefault || false
+        }
+      });
+
+      if (formData.isDefault) {
+        await tx.address.updateMany({
+          where: { userId, id: { not: address.id } },
+          data: { isDefault: false }
+        });
       }
     });
-
-    if (formData.isDefault) {
-      await prisma.address.updateMany({
-        where: { userId, id: { not: address.id } },
-        data: { isDefault: false }
-      });
-    }
 
     return { success: true };
   } catch (e) {
@@ -168,15 +170,16 @@ export async function setDefaultAddress(addressId) {
   if (!userId) return { success: false, error: "Not authenticated" };
 
   try {
-    await prisma.address.updateMany({
-      where: { userId },
-      data: { isDefault: false }
-    });
-
-    await prisma.address.update({
-      where: { id: addressId, userId },
-      data: { isDefault: true }
-    });
+    await prisma.$transaction([
+      prisma.address.updateMany({
+        where: { userId },
+        data: { isDefault: false }
+      }),
+      prisma.address.update({
+        where: { id: addressId, userId },
+        data: { isDefault: true }
+      })
+    ]);
 
     return { success: true };
   } catch (e) {

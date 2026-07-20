@@ -63,16 +63,12 @@ export async function placeOrder(formData) {
     const subtotal = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     
     let discount = 0;
+    let validCouponCode = null;
     if (formData.couponCode) {
       const couponRes = await validateCoupon(formData.couponCode, subtotal);
       if (couponRes.success) {
         discount = couponRes.discount;
-        
-        // Update coupon usage count
-        await prisma.coupon.update({
-          where: { code: formData.couponCode.toUpperCase() },
-          data: { timesUsed: { increment: 1 } }
-        });
+        validCouponCode = formData.couponCode.toUpperCase();
       }
     }
 
@@ -80,84 +76,92 @@ export async function placeOrder(formData) {
     const deliveryCharge = (subtotal - discount) > 500 ? 0 : 50;
     const total = subtotal - discount + tax + deliveryCharge;
 
-    // 4. Handle Address
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    
-    let finalAddressId;
 
-    if (parsed.data.addressId) {
-      // User selected a saved address, verify it belongs to them
-      const existingAddress = await prisma.address.findFirst({
-        where: { id: parsed.data.addressId, userId }
-      });
+    // Begin Transaction for all write operations
+    const orderId = await prisma.$transaction(async (tx) => {
       
-      if (!existingAddress) {
-        return { success: false, error: "Selected address not found or invalid." };
-      }
-      finalAddressId = existingAddress.id;
-    } else {
-      // Create a new address
-      const address = await prisma.address.create({
-        data: {
-          userId,
-          fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim() || user.name || "Customer",
-          phone: parsed.data.phone || user.phone || "",
-          addressLine1: parsed.data.address,
-          city: parsed.data.city,
-          state: parsed.data.state,
-          country: "India",
-          pincode: parsed.data.zipCode,
-          isDefault: parsed.data.saveAddress || false
-        }
-      });
-      finalAddressId = address.id;
-
-      if (parsed.data.saveAddress) {
-        await prisma.address.updateMany({
-          where: { userId, id: { not: address.id } },
-          data: { isDefault: false }
+      // Update coupon usage count safely inside transaction
+      if (validCouponCode) {
+        await tx.coupon.update({
+          where: { code: validCouponCode },
+          data: { timesUsed: { increment: 1 } }
         });
       }
-    }
 
-    // 5. Create the Order
-    const order = await prisma.order.create({
-      data: {
-        userId: userId,
-        addressId: finalAddressId,
-        orderStatus: "PENDING",
-        paymentStatus: "PENDING",
-        subtotal,
-        tax,
-        deliveryCharge,
-        discount,
-        total,
-        items: {
-          create: cart.items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.product.price
-          }))
+      // 4. Handle Address
+      let finalAddressId;
+      if (parsed.data.addressId) {
+        const existingAddress = await tx.address.findFirst({
+          where: { id: parsed.data.addressId, userId }
+        });
+        if (!existingAddress) throw new Error("Selected address not found or invalid.");
+        finalAddressId = existingAddress.id;
+      } else {
+        const address = await tx.address.create({
+          data: {
+            userId,
+            fullName: `${parsed.data.firstName} ${parsed.data.lastName}`.trim() || user.name || "Customer",
+            phone: parsed.data.phone || user.phone || "",
+            addressLine1: parsed.data.address,
+            city: parsed.data.city,
+            state: parsed.data.state,
+            country: "India",
+            pincode: parsed.data.zipCode,
+            isDefault: parsed.data.saveAddress || false
+          }
+        });
+        finalAddressId = address.id;
+
+        if (parsed.data.saveAddress) {
+          await tx.address.updateMany({
+            where: { userId, id: { not: address.id } },
+            data: { isDefault: false }
+          });
         }
       }
-    });
 
-    // 6. Decrement inventory
-    for (const item of cart.items) {
-      await prisma.inventory.update({
-        where: { productId: item.productId },
+      // 5. Create the Order
+      const order = await tx.order.create({
         data: {
-          quantity: { decrement: item.quantity },
+          userId: userId,
+          addressId: finalAddressId,
+          orderStatus: "PENDING",
+          paymentStatus: "PENDING",
+          subtotal,
+          tax,
+          deliveryCharge,
+          discount,
+          total,
+          items: {
+            create: cart.items.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.product.price
+            }))
+          }
         }
       });
-    }
 
-    // 7. Clear the Cart
-    await prisma.cartItem.deleteMany({
-      where: { cartId: cart.id }
+      // 6. Decrement inventory
+      for (const item of cart.items) {
+        await tx.inventory.update({
+          where: { productId: item.productId },
+          data: {
+            quantity: { decrement: item.quantity },
+          }
+        });
+      }
+
+      // 7. Clear the Cart
+      await tx.cartItem.deleteMany({
+        where: { cartId: cart.id }
+      });
+
+      return order.id;
     });
 
-    return { success: true, orderId: order.id };
+    return { success: true, orderId: orderId };
   } catch (error) {
     console.error("Failed to place order:", error);
     return { success: false, error: "Failed to place order. Please try again." };

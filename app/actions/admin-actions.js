@@ -72,8 +72,35 @@ export async function getAdminReviews() {
     rating: r.rating,
     comment: r.comment || "",
     date: r.createdAt.toISOString().split('T')[0],
-    isApproved: true
+    isApproved: r.isPublished
   }));
+}
+
+export async function approveReview(id) {
+  await requireAdmin();
+  try {
+    await prisma.review.update({
+      where: { id },
+      data: { isPublished: true }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to approve review:", error);
+    return { success: false, error: "Failed to approve review" };
+  }
+}
+
+export async function deleteReview(id) {
+  await requireAdmin();
+  try {
+    await prisma.review.delete({
+      where: { id }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete review:", error);
+    return { success: false, error: "Failed to delete review" };
+  }
 }
 
 export async function updateOrderStatus(orderId, newStatus) {
@@ -141,5 +168,19 @@ export async function getAdminContactMessages() {
     subject: m.subject || "N/A",
     message: m.message,
     date: m.createdAt.toISOString()
+  }));
+}
+
+export async function getNewsletterSubscribers() {
+  await requireAdmin();
+
+  const subscribers = await prisma.newsletter.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+
+  return subscribers.map(s => ({
+    id: s.id,
+    email: s.email,
+    date: s.createdAt.toISOString()
   }));
 }

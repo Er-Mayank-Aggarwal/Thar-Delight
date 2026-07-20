@@ -18,9 +18,21 @@ export async function submitReview(data) {
       return { success: false, error: "Rating must be between 1 and 5" };
     }
     
-    // Optional: Check if user actually bought the product
-    // We'll skip that for now to make it easier to test
+    // Check if user actually bought the product
+    const hasPurchased = await prisma.order.findFirst({
+      where: {
+        userId,
+        items: {
+          some: {
+            productId
+          }
+        }
+      }
+    });
 
+    if (!hasPurchased) {
+      return { success: false, error: "You can only review products you have purchased" };
+    }
     // Check if user already reviewed this product
     const existingReview = await prisma.review.findFirst({
       where: {
@@ -39,12 +51,12 @@ export async function submitReview(data) {
         productId,
         rating,
         comment,
-        isPublished: true // Auto-publish for now
+        isPublished: false // Send to moderation queue
       }
     });
 
     revalidatePath(`/product/[slug]`, "page");
-    return { success: true, message: "Review submitted successfully!" };
+    return { success: true, message: "Review submitted! It will appear once approved by moderation." };
   } catch (error) {
     console.error("Failed to submit review:", error);
     return { success: false, error: "Failed to submit review" };
