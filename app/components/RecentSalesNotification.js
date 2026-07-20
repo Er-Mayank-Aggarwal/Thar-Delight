@@ -30,31 +30,25 @@ export default function RecentSalesNotification() {
   useEffect(() => {
     if (sales.length === 0 || !shouldRender) return;
 
-    // Initial delay before showing the first notification
+    // Initial delay before showing the notification
     const initialTimer = setTimeout(() => {
       setIsVisible(true);
-    }, 5000);
-
-    // Cycle through notifications
-    const cycleTimer = setInterval(() => {
-      setIsVisible(false);
       
+      // Auto-hide after 6 seconds
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % sales.length);
-        setIsVisible(true);
-      }, 1000); // Wait 1s between hiding and showing next
-      
-    }, 15000); // Show a new notification every 15 seconds
+        setIsVisible(false);
+        setHasDismissed(true);
+      }, 6000);
+    }, 3000);
 
     return () => {
       clearTimeout(initialTimer);
-      clearInterval(cycleTimer);
     };
   }, [sales, shouldRender]);
 
   if (sales.length === 0 || !shouldRender) return null;
 
-  const currentSale = sales[currentIndex];
+  const currentSale = sales[0]; // Now we only have 1 sale
   
   // Format time ago (simplified)
   const timeAgo = (dateStr) => {
@@ -73,7 +67,7 @@ export default function RecentSalesNotification() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.9 }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-50 max-w-sm w-full shadow-2xl rounded-2xl bg-white border border-brand-sand/50 overflow-hidden flex"
+          className="fixed bottom-4 left-4 right-4 sm:left-6 sm:bottom-6 z-50 w-[calc(100%-2rem)] sm:w-96 max-w-sm shadow-2xl rounded-2xl bg-white border border-brand-sand/50 overflow-hidden flex"
         >
           {/* Left accent bar */}
           <div className="w-1.5 bg-brand-gold shrink-0" />
@@ -84,9 +78,9 @@ export default function RecentSalesNotification() {
                 setIsVisible(false);
                 setHasDismissed(true);
               }}
-              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 transition-colors z-10 bg-white/50 rounded-full"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
 
             {currentSale.imageUrl ? (
@@ -101,14 +95,14 @@ export default function RecentSalesNotification() {
               </div>
             )}
 
-            <div className="flex-1 pr-4">
+            <div className="flex-1 pr-6">
               <p className="text-xs text-gray-500 font-medium mb-0.5">
                 {currentSale.firstName} {currentSale.city}{" "}
-                <span className="text-gray-400 font-normal ml-1">
+                <span className="text-gray-400 font-normal ml-1 whitespace-nowrap">
                   • {timeAgo(currentSale.timestamp)}
                 </span>
               </p>
-              <p className="text-sm font-serif text-brand-brown leading-snug">
+              <p className="text-sm font-serif text-brand-brown leading-snug line-clamp-2">
                 Purchased <span className="font-semibold text-brand-gold-dark">{currentSale.productName}</span>
               </p>
             </div>

@@ -6,16 +6,21 @@ import { unstable_cache } from "next/cache";
 export const getRecentSales = unstable_cache(
   async () => {
     try {
+      const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
+      
       const recentOrders = await prisma.order.findMany({
         where: {
           orderStatus: {
             notIn: ["CANCELLED", "RETURNED"],
           },
+          createdAt: {
+            gte: thirtyMinsAgo,
+          }
         },
         orderBy: {
           createdAt: "desc",
         },
-        take: 10,
+        take: 1,
         include: {
           user: { select: { name: true } },
           address: { select: { city: true } },
