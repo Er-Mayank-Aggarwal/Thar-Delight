@@ -123,8 +123,8 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                 <div className="h-6 w-px bg-brand-sand" />
                 <div className="flex items-center gap-1.5">
                   <Star size={16} className="text-amber-400 fill-amber-400" />
-                  <span className="text-brand-brown font-semibold text-sm">{product.rating}</span>
-                  <span className="text-gray-400 text-xs sm:text-sm">({product.reviews} customer reviews)</span>
+                  <span className="text-brand-brown font-semibold text-sm">{product.rating || (localReviews.length > 0 ? (localReviews.reduce((sum, rev) => sum + rev.rating, 0) / localReviews.length).toFixed(1) : "5.0")}</span>
+                  <span className="text-gray-400 text-xs sm:text-sm">({localReviews.length} customer reviews)</span>
                 </div>
               </div>
 
@@ -338,7 +338,7 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                           </div>
                           <div>
                             <span className="font-semibold text-brand-brown block leading-tight">{review.user?.name || "Anonymous"}</span>
-                            <span className="text-[11px] text-gray-400">{new Date(review.createdAt).toLocaleDateString()}</span>
+                            <span className="text-[11px] text-gray-400">{new Date(review.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                           </div>
                         </div>
                         <div className="flex items-center bg-brand-cream/50 px-2 py-1 rounded-full">
