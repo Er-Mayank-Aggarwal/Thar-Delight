@@ -2,7 +2,7 @@ import { getAllInventory } from "@/app/actions/inventory-actions";
 import AdminInventoryClient from "./AdminInventoryClient";
 import { Suspense } from "react";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Inventory Admin — Thar Delight",

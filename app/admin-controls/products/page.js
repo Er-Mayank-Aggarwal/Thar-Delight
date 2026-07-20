@@ -2,7 +2,7 @@ import { getAllProducts, getAllCategories } from "@/app/actions/product-actions"
 import AdminProductsClient from "./AdminProductsClient";
 import { Suspense } from "react";
 
-export const revalidate = 30;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Products Admin — Thar Delight",
