@@ -62,8 +62,6 @@ export async function addProductToDbCart(productId, quantity = 1) {
       },
     });
   }
-
-  return await getDbCart();
 }
 
 export async function removeProductFromDbCart(productId) {
@@ -76,8 +74,6 @@ export async function removeProductFromDbCart(productId) {
       productId,
     },
   });
-
-  return await getDbCart();
 }
 
 export async function updateDbCartItemQuantity(productId, quantity) {
@@ -95,8 +91,6 @@ export async function updateDbCartItemQuantity(productId, quantity) {
     },
     data: { quantity },
   });
-
-  return await getDbCart();
 }
 
 export async function clearDbCart() {
@@ -106,6 +100,4 @@ export async function clearDbCart() {
   await prisma.cartItem.deleteMany({
     where: { cartId: cart.id },
   });
-
-  return await getDbCart();
 }

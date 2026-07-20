@@ -60,10 +60,12 @@ export default function ProductCard({ product }) {
     <div className="group relative bg-white rounded-2xl overflow-hidden border border-brand-sand/60 hover:border-brand-gold/30 transition-all duration-500 hover:shadow-xl hover:shadow-brand-gold/10 hover:-translate-y-1">
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-brand-cream">
-        <img
+        <Image
           src={imageUrl}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
 
         {/* Overlay on hover */}

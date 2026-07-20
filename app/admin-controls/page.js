@@ -1,12 +1,10 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 import Link from "next/link";
 import {
   IndianRupee,
   ShoppingCart,
   Package,
-  TrendingUp,
   ArrowRight,
-  Clock,
   CheckCircle2,
   Truck,
   AlertCircle,
@@ -15,8 +13,6 @@ import {
   Users,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { getAllProducts } from "@/app/actions/product-actions";
-import { getSession } from "@/lib/auth";
 
 const statusConfig = {
   pending: {
