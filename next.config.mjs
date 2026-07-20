@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 300,
+    },
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
