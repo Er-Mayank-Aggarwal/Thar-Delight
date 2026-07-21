@@ -39,12 +39,12 @@ export default function Footer() {
     const res = await subscribeToNewsletter(email);
     
     if (res.success) {
-      setStatus("success");
-      setMessage(res.message);
+      window.alert(res.message || "Successfully subscribed to the newsletter!");
+      setStatus("idle");
       setEmail("");
     } else {
-      setStatus("error");
-      setMessage(res.error);
+      window.alert(res.error || "Failed to subscribe. Please try again.");
+      setStatus("idle");
     }
   };
 
@@ -69,13 +69,8 @@ export default function Footer() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                      className={`flex-1 px-5 py-3 bg-white/10 border ${status === 'error' ? 'border-red-500' : 'border-white/20'} rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold transition-colors leading-normal w-full`}
+                      className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-colors leading-normal w-full"
                     />
-                    {message && (
-                      <span className={`absolute -bottom-6 left-5 text-xs ${status === 'success' ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {message}
-                      </span>
-                    )}
                   </div>
                   <button 
                     type="submit"

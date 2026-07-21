@@ -54,6 +54,11 @@ export default function Checkout() {
           getUserAddresses()
         ]);
         
+        if (!profileRes) {
+          router.push("/account");
+          return;
+        }
+
         if (profileRes) {
           setFormData(prev => ({
             ...prev,
@@ -304,7 +309,7 @@ export default function Checkout() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Name</label>
-                      <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.lastName ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Sharma" />
+                      <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.lastName ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Sharma" />
                       {formErrors.lastName && <p className="text-red-500 text-xs mt-1">{formErrors.lastName}</p>}
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
