@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { placeOrder } from "../actions/checkout-actions";
+import { syncClientCartToDb } from "../actions/cart-actions";
 import { validateCoupon } from "../actions/coupon-validate-actions";
 import { getUserAddresses, getUserProfile } from "../actions/user-actions";
 import { useRouter } from "next/navigation";
@@ -127,6 +128,13 @@ export default function Checkout() {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
+
+    const syncRes = await syncClientCartToDb(cart);
+    if (!syncRes?.success) {
+      setError(syncRes?.error || "Failed to sync cart.");
+      setIsSubmitting(false);
+      return;
+    }
 
     const payload = {
       ...formData,

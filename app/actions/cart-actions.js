@@ -101,3 +101,27 @@ export async function clearDbCart() {
     where: { cartId: cart.id },
   });
 }
+
+export async function syncClientCartToDb(clientCartItems) {
+  const userId = await getUserId();
+  if (!userId) return { success: false, error: "Not logged in" };
+
+  let cart = await prisma.cart.findUnique({ where: { userId } });
+  if (!cart) {
+    cart = await prisma.cart.create({ data: { userId } });
+  }
+
+  await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+  
+  if (clientCartItems && clientCartItems.length > 0) {
+    await prisma.cartItem.createMany({
+      data: clientCartItems.map(item => ({
+        cartId: cart.id,
+        productId: item.id,
+        quantity: item.quantity
+      }))
+    });
+  }
+
+  return { success: true };
+}
