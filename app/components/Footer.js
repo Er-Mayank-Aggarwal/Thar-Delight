@@ -171,11 +171,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3 text-sm text-white/50">
                 <Phone size={16} className="text-brand-gold flex-shrink-0" />
-                <span>+91 98765 43210</span>
+                <a href="tel:+919876543210" className="hover:text-brand-gold transition-colors">+91 98765 43210</a>
               </li>
               <li className="flex items-center gap-3 text-sm text-white/50">
                 <Mail size={16} className="text-brand-gold flex-shrink-0" />
-                <span>hello@thardelight.com</span>
+                <a href="mailto:hello@thardelight.com" className="hover:text-brand-gold transition-colors">hello@thardelight.com</a>
               </li>
             </ul>
           </div>

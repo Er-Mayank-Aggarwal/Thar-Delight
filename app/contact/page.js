@@ -83,7 +83,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-serif text-lg text-brand-brown font-semibold mb-1">Call Us</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    +91 98765 43210
+                    <a href="tel:+919876543210" className="hover:text-brand-gold transition-colors">+91 98765 43210</a>
                   </p>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-serif text-lg text-brand-brown font-semibold mb-1">Email</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    hello@thardelight.com
+                    <a href="mailto:hello@thardelight.com" className="hover:text-brand-gold transition-colors">hello@thardelight.com</a>
                   </p>
                 </div>
               </div>
