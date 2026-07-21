@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import Header from "./Header";
 import Footer from "./Footer";
-import RecentSalesNotification from "./RecentSalesNotification";
 import { CartProvider } from "../context/CartContext";
 
 export default function LayoutShell({ children }) {
@@ -19,7 +18,6 @@ export default function LayoutShell({ children }) {
       <div id="site-header"><Header /></div>
       <main className="flex-1">{children}</main>
       <div id="site-footer"><Footer /></div>
-      <div id="site-notifications"><RecentSalesNotification /></div>
     </CartProvider>
   );
 }
