@@ -80,7 +80,7 @@ export default function AdminSubscribersClient({ initialSubscribers }) {
                     <td className="px-6 py-4 text-gray-500">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-gray-400 flex-shrink-0" />
-                        {new Date(sub.date).toLocaleDateString("en-IN", {
+                        {new Date(sub.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                           day: "numeric", month: "short", year: "numeric"
                         })}
                       </div>
@@ -105,7 +105,7 @@ export default function AdminSubscribersClient({ initialSubscribers }) {
                     </p>
                     <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
                       <Calendar size={12} className="text-gray-400" />
-                      {new Date(sub.date).toLocaleDateString("en-IN", {
+                      {new Date(sub.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                         day: "numeric", month: "short", year: "numeric"
                       })}
                     </div>

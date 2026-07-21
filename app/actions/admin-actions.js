@@ -23,7 +23,7 @@ export async function getAdminOrders() {
       address: o.address?.city || "N/A"
     },
     date: o.createdAt.toISOString().split('T')[0],
-    time: o.createdAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+    time: o.createdAt.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata",  timeZone: "Asia/Kolkata",  hour: "2-digit", minute: "2-digit" }),
     total: o.total,
     status: o.orderStatus.toLowerCase(),
     paymentMethod: o.payment?.paymentMethod || "COD", 

@@ -223,7 +223,7 @@ export default function AdminCustomersClient({ initialCustomers }) {
                           Since{" "}
                           {new Date(customer.joinedDate).toLocaleDateString(
                             "en-IN",
-                            { month: "short", year: "numeric" }
+                            { timeZone: "Asia/Kolkata", month: "short", year: "numeric" }
                           )}
                         </p>
                       </div>
@@ -268,7 +268,7 @@ export default function AdminCustomersClient({ initialCustomers }) {
                   <td className="px-6 py-4 text-right text-sm text-gray-500">
                     {new Date(customer.lastOrderDate).toLocaleDateString(
                       "en-IN",
-                      { day: "numeric", month: "short" }
+                      { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" }
                     )}
                   </td>
                 </tr>

@@ -20,7 +20,7 @@ function OrderCard({ order }) {
         </div>
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Date</p>
-          <p className="text-sm font-medium text-brand-brown">{new Date(order.createdAt).toLocaleDateString("en-IN")}</p>
+          <p className="text-sm font-medium text-brand-brown">{new Date(order.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  timeZone: "Asia/Kolkata" })}</p>
         </div>
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Total</p>
@@ -81,7 +81,7 @@ function OrderCard({ order }) {
                       </div>
                       <div className="pb-4">
                         <h4 className="font-semibold text-brand-brown text-sm">{h.status}</h4>
-                        <span className="text-xs text-gray-500">{new Date(h.createdAt).toLocaleString("en-IN")}</span>
+                        <span className="text-xs text-gray-500">{new Date(h.createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata",  timeZone: "Asia/Kolkata" })}</span>
                       </div>
                     </div>
                   ))}
@@ -319,12 +319,12 @@ export default function UserProfile({ user, orders, addresses }) {
                         </div>
                         <div className="p-4 bg-brand-cream/30 rounded-xl border border-brand-sand/40">
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Date of Birth</p>
-                          <p className="text-brand-brown font-medium">{user.dob ? new Date(user.dob).toLocaleDateString("en-IN") : <span className="text-gray-400 italic">Not provided</span>}</p>
+                          <p className="text-brand-brown font-medium">{user.dob ? new Date(user.dob).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  timeZone: "Asia/Kolkata" }) : <span className="text-gray-400 italic">Not provided</span>}</p>
                         </div>
                       </div>
                       <div className="p-4 bg-brand-cream/30 rounded-xl border border-brand-sand/40">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Member Since</p>
-                        <p className="text-brand-brown font-medium">{new Date(user.createdAt).toLocaleDateString("en-IN", { month: 'long', year: 'numeric' })}</p>
+                        <p className="text-brand-brown font-medium">{new Date(user.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  month: 'long', year: 'numeric' })}</p>
                       </div>
                     </div>
                   )}

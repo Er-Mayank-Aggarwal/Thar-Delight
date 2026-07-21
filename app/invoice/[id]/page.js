@@ -72,7 +72,7 @@ export default async function InvoicePage({ params }) {
                 <span className="font-semibold text-brand-brown">#{order.id.slice(0,8).toUpperCase()}</span>
               </p>
               <p className="text-[11px] text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                {new Date(order.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  day: "2-digit", month: "short", year: "numeric" })}
               </p>
             </div>
           </div>

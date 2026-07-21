@@ -338,7 +338,7 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                           </div>
                           <div>
                             <span className="font-semibold text-brand-brown block leading-tight">{review.user?.name || "Anonymous"}</span>
-                            <span className="text-[11px] text-gray-400">{new Date(review.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                            <span className="text-[11px] text-gray-400">{new Date(review.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  day: "numeric", month: "short", year: "numeric" })}</span>
                           </div>
                         </div>
                         <div className="flex items-center bg-brand-cream/50 px-2 py-1 rounded-full">

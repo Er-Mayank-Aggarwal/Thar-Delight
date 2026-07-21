@@ -90,7 +90,7 @@ export default async function AdminDashboard() {
     id: order.id.slice(0, 8).toUpperCase(),
     customer: { name: order.user?.name || "Guest" },
     date: order.createdAt,
-    time: order.createdAt.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+    time: order.createdAt.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata",  timeZone: "Asia/Kolkata",  hour: "2-digit", minute: "2-digit" }),
     total: order.total,
     status: order.orderStatus.toLowerCase(),
   }));
@@ -269,7 +269,7 @@ export default async function AdminDashboard() {
                       </p>
                       <p className="text-xs text-gray-400">
                         {order.id} ·{" "}
-                        {new Date(order.date).toLocaleDateString("en-IN", {
+                        {new Date(order.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                           day: "numeric",
                           month: "short",
                         })}

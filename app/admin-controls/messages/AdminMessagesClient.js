@@ -75,7 +75,7 @@ export default function AdminMessagesClient({ initialMessages }) {
                 </div>
                 <div className="text-sm text-gray-400 flex items-center gap-1.5 bg-brand-cream/50 px-3 py-1.5 rounded-lg self-start mt-2 sm:mt-0">
                   <Calendar size={14} />
-                  {new Date(msg.date).toLocaleDateString("en-IN", {
+                  {new Date(msg.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                     day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
                   })}
                 </div>

@@ -292,7 +292,7 @@ export default function AdminOrdersClient({ initialOrders }) {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-gray-500">
-                        {new Date(order.date).toLocaleDateString("en-IN", {
+                        {new Date(order.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                           day: "numeric",
                           month: "short",
                         })}
@@ -371,7 +371,7 @@ export default function AdminOrdersClient({ initialOrders }) {
                     <p className="text-xs text-gray-400">
                       {order.items.length} item
                       {order.items.length > 1 ? "s" : ""} ·{" "}
-                      {new Date(order.date).toLocaleDateString("en-IN", {
+                      {new Date(order.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                         day: "numeric",
                         month: "short",
                       })}
@@ -428,7 +428,7 @@ export default function AdminOrdersClient({ initialOrders }) {
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Placed on{" "}
-                  {new Date(selectedOrder.date).toLocaleDateString("en-IN", {
+                  {new Date(selectedOrder.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                     day: "numeric",
                     month: "long",
                     year: "numeric",

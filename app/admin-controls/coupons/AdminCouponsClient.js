@@ -283,7 +283,7 @@ export default function AdminCouponsClient({ initialCoupons }) {
                       {coupon.expiresAt
                         ? `Expires: ${new Date(
                             coupon.expiresAt
-                          ).toLocaleDateString("en-IN", {
+                          ).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                             day: "numeric",
                             month: "short",
                             year: "numeric",

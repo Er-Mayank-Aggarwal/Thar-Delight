@@ -171,7 +171,7 @@ export default function AdminReviewsClient({ initialReviews }) {
                   <span>{review.product.name}</span>
                   <span>·</span>
                   <span>
-                    {new Date(review.date).toLocaleDateString("en-IN", {
+                    {new Date(review.date).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", 
                       day: "numeric",
                       month: "short",
                       year: "numeric",
