@@ -170,12 +170,16 @@ export const getHeroProductRatings = unstable_cache(
     const products = await prisma.product.findMany({
       where: { slug: { in: slugs } },
       select: {
+        id: true,
         slug: true,
+        inventory: true,
         reviews: { where: { isPublished: true }, select: { rating: true } }
       }
     });
     return products.map(p => ({
+      id: p.id,
       slug: p.slug,
+      inventory: p.inventory,
       count: p.reviews.length,
       avg: p.reviews.length > 0
         ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1)

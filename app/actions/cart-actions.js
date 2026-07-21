@@ -37,16 +37,42 @@ export async function getDbCart() {
   return cart;
 }
 
-export async function addProductToDbCart(productId, quantity = 1) {
-  const cart = await getDbCart();
-  if (!cart) return null;
+async function getDbCartId() {
+  const userId = await getUserId();
+  if (!userId) return null;
 
+  let cart = await prisma.cart.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+
+  if (!cart) {
+    cart = await prisma.cart.create({
+      data: { userId },
+      select: { id: true },
+    });
+  }
+
+  return cart.id;
+}
+
+export async function addProductToDbCart(productId, quantity = 1) {
+  const cartId = await getDbCartId();
+  if (!cartId) return null;
+
+  const inventory = await prisma.inventory.findUnique({ where: { productId } });
+  
   const existingItem = await prisma.cartItem.findFirst({
     where: {
-      cartId: cart.id,
+      cartId,
       productId,
     },
   });
+  
+  const totalQuantity = (existingItem?.quantity || 0) + quantity;
+  if (inventory && inventory.quantity < totalQuantity) {
+    return { success: false, error: "Product is out of stock or requested quantity exceeds available stock" };
+  }
 
   if (existingItem) {
     await prisma.cartItem.update({
@@ -56,21 +82,23 @@ export async function addProductToDbCart(productId, quantity = 1) {
   } else {
     await prisma.cartItem.create({
       data: {
-        cartId: cart.id,
+        cartId,
         productId,
         quantity,
       },
     });
   }
+  
+  return { success: true };
 }
 
 export async function removeProductFromDbCart(productId) {
-  const cart = await getDbCart();
-  if (!cart) return null;
+  const cartId = await getDbCartId();
+  if (!cartId) return null;
   
   await prisma.cartItem.deleteMany({
     where: {
-      cartId: cart.id,
+      cartId,
       productId,
     },
   });
@@ -78,27 +106,35 @@ export async function removeProductFromDbCart(productId) {
 
 export async function updateDbCartItemQuantity(productId, quantity) {
   if (quantity < 1) {
-    return await removeProductFromDbCart(productId);
+    await removeProductFromDbCart(productId);
+    return { success: true };
   }
 
-  const cart = await getDbCart();
-  if (!cart) return null;
+  const cartId = await getDbCartId();
+  if (!cartId) return null;
+  
+  const inventory = await prisma.inventory.findUnique({ where: { productId } });
+  if (inventory && inventory.quantity < quantity) {
+    return { success: false, error: "Requested quantity exceeds available stock" };
+  }
   
   await prisma.cartItem.updateMany({
     where: {
-      cartId: cart.id,
+      cartId,
       productId,
     },
     data: { quantity },
   });
+  
+  return { success: true };
 }
 
 export async function clearDbCart() {
-  const cart = await getDbCart();
-  if (!cart) return null;
+  const cartId = await getDbCartId();
+  if (!cartId) return null;
   
   await prisma.cartItem.deleteMany({
-    where: { cartId: cart.id },
+    where: { cartId },
   });
 }
 

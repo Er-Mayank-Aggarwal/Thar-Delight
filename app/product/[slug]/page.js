@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { getProductBySlug, getRelatedProducts, getFeaturedProducts } from "@/app/actions/product-actions";
+import { getRelatedProducts, getFeaturedProducts } from "@/app/actions/product-actions";
+import { getProductBySlugCached } from "@/lib/queries/products";
 import ProductDetailClient from "./ProductDetailClient";
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlugCached(slug);
   if (!product) {
     return { title: "Product Not Found — Thar Delight" };
   }
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ProductDetail({ params }) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlugCached(slug);
 
   if (!product) {
     return (

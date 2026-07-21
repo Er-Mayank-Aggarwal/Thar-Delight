@@ -38,8 +38,8 @@ export default function CategoryShowcase() {
                   src={category.image}
                   alt={category.name}
                   fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 {/* Colored overlay blending with theme */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${category.color} mix-blend-multiply opacity-55 group-hover:opacity-40 transition-opacity duration-500`} />

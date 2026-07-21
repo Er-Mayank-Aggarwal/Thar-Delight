@@ -106,6 +106,8 @@ export async function placeOrder(formData) {
             phone: parsed.data.phone || user.phone || "",
             addressLine1: parsed.data.address,
             city: parsed.data.city,
+            district: parsed.data.district || null,
+            landmark: parsed.data.landmark || null,
             state: parsed.data.state,
             country: "India",
             pincode: parsed.data.zipCode,

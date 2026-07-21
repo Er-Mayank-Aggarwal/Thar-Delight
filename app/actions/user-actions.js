@@ -21,6 +21,8 @@ export async function getUserProfile() {
         name: true,
         email: true,
         phone: true,
+        gender: true,
+        dob: true,
         createdAt: true,
       }
     });
@@ -99,6 +101,8 @@ export async function updateUserProfile(formData) {
         name: parsed.data.name,
         email: parsed.data.email,
         phone: parsed.data.phone || null,
+        gender: parsed.data.gender || null,
+        dob: parsed.data.dob ? new Date(parsed.data.dob) : null,
       }
     });
     return { success: true };
@@ -133,6 +137,8 @@ export async function addAddress(formData) {
           phone: formData.phone || user.phone || "",
           addressLine1: formData.street || formData.addressLine1,
           city: parsed.data.city,
+          district: formData.district || null,
+          landmark: formData.landmark || null,
           state: parsed.data.state,
           country: formData.country || "India",
           pincode: formData.zipCode || formData.pincode,

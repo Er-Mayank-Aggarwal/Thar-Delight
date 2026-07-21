@@ -128,6 +128,8 @@ exports.Prisma.UserScalarFieldEnum = {
   image: 'image',
   password: 'password',
   phone: 'phone',
+  gender: 'gender',
+  dob: 'dob',
   role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -177,9 +179,11 @@ exports.Prisma.AddressScalarFieldEnum = {
   addressLine1: 'addressLine1',
   addressLine2: 'addressLine2',
   city: 'city',
+  district: 'district',
   state: 'state',
   country: 'country',
   pincode: 'pincode',
+  landmark: 'landmark',
   isDefault: 'isDefault',
   createdAt: 'createdAt'
 };

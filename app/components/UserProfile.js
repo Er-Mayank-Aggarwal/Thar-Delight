@@ -8,6 +8,16 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
+const INDIAN_STATES = [
+  "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam",
+  "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir",
+  "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh",
+  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha",
+  "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
+  "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+];
+
 function OrderCard({ order }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -129,13 +139,46 @@ export default function UserProfile({ user, orders, addresses }) {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [addressForm, setAddressForm] = useState({
     street: "",
+    landmark: "",
     city: "",
+    district: "",
     state: "",
     zipCode: "",
     isDefault: false
   });
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
+  const [pincodeError, setPincodeError] = useState("");
 
   const router = useRouter();
+
+  const handlePincodeChange = async (e) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setAddressForm(prev => ({ ...prev, zipCode: val }));
+    setPincodeError("");
+    
+    if (val.length === 6) {
+      setIsFetchingLocation(true);
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${val}`);
+        const data = await res.json();
+        if (data && data[0] && data[0].Status === "Success") {
+          const postOffice = data[0].PostOffice[0];
+          setAddressForm(prev => ({
+            ...prev,
+            district: postOffice.District || postOffice.Block || prev.district,
+            state: postOffice.State || prev.state
+          }));
+        } else {
+          setPincodeError("Invalid PIN Code");
+        }
+      } catch (err) {
+        console.error("Failed to fetch pincode details", err);
+        setPincodeError("Error verifying PIN Code");
+      } finally {
+        setIsFetchingLocation(false);
+      }
+    }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -377,17 +420,34 @@ export default function UserProfile({ user, orders, addresses }) {
                           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Street Address</label>
                           <input type="text" required value={addressForm.street} onChange={(e) => setAddressForm({...addressForm, street: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" />
                         </div>
+                        <div className="space-y-1.5 sm:col-span-2">
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Nearby Landmark (Optional)</label>
+                          <input type="text" value={addressForm.landmark} onChange={(e) => setAddressForm({...addressForm, landmark: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" placeholder="e.g. Near Apollo Hospital" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex justify-between">
+                            <span>ZIP / Postal Code</span>
+                            {isFetchingLocation && <span className="text-brand-gold text-[10px] animate-pulse">Auto-fetching...</span>}
+                          </label>
+                          <input type="text" required value={addressForm.zipCode} onChange={handlePincodeChange} maxLength="6" className={`w-full px-4 py-3 bg-white border rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors ${pincodeError ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} />
+                          {pincodeError && <p className="text-red-500 text-xs mt-1">{pincodeError}</p>}
+                        </div>
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">City</label>
-                          <input type="text" required value={addressForm.city} onChange={(e) => setAddressForm({...addressForm, city: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" />
+                          <input type="text" required value={addressForm.city} onChange={(e) => setAddressForm({...addressForm, city: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" placeholder="e.g. Andheri West" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">District</label>
+                          <input type="text" readOnly required value={addressForm.district} className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-600 focus:outline-none cursor-not-allowed" placeholder="Auto-filled from PIN" />
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">State</label>
-                          <input type="text" required value={addressForm.state} onChange={(e) => setAddressForm({...addressForm, state: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">ZIP Code</label>
-                          <input type="text" required value={addressForm.zipCode} onChange={(e) => setAddressForm({...addressForm, zipCode: e.target.value})} className="w-full px-4 py-3 bg-white border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" />
+                          <select required disabled value={addressForm.state} className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-600 focus:outline-none appearance-none cursor-not-allowed">
+                            <option value="">Auto-filled from PIN</option>
+                            {INDIAN_STATES.map(state => (
+                              <option key={state} value={state}>{state}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="flex items-center gap-2 sm:col-span-2 pt-2">
                           <input type="checkbox" id="isDefault" checked={addressForm.isDefault} onChange={(e) => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4 text-brand-gold rounded border-gray-300 focus:ring-brand-gold" />
@@ -424,9 +484,11 @@ export default function UserProfile({ user, orders, addresses }) {
                           )}
                           <div className="space-y-1 text-sm text-gray-600 mt-2 pr-6">
                             <p className="font-medium text-brand-brown text-base mb-2">{user.name}</p>
-                            <p>{addr.street}</p>
-                            <p>{addr.city}, {addr.state} {addr.zipCode}</p>
-                            <p>India</p>
+                            <p>{addr.addressLine1 || addr.street}</p>
+                            {addr.landmark && <p>Landmark: {addr.landmark}</p>}
+                            <p>{addr.city}{addr.district && addr.city !== addr.district ? `, ${addr.district}` : ''}</p>
+                            <p>{addr.state} {addr.zipCode || addr.pincode}</p>
+                            <p>{addr.country || "India"}</p>
                           </div>
                           
                           <div className="mt-5 pt-4 border-t border-brand-sand/40 flex items-center justify-between">

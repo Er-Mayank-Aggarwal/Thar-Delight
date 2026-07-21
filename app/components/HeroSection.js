@@ -48,7 +48,7 @@ export default function HeroSection() {
         const updated = wheelProducts.map(p => {
           const r = ratingMap[p.slug];
           if (r) {
-            return { ...p, rating: r.count > 0 ? r.avg : 0, reviews: r.count };
+            return { ...p, id: r.id, inventory: r.inventory, rating: r.count > 0 ? r.avg : 0, reviews: r.count };
           }
           return p;
         });
@@ -81,20 +81,13 @@ export default function HeroSection() {
   const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
   const baseAngle = radius < 400 ? 90 : 180;
 
-  const handleAddToCart = async () => {
-    try {
-      setIsAdding(true);
-      const realProduct = await getProductBySlug(activeProduct.slug);
-      if (realProduct) {
-        await addToCart(realProduct);
-        setAdded(true);
-        setTimeout(() => setAdded(false), 2000);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsAdding(false);
-    }
+  const handleAddToCart = () => {
+    // Wait until real product data is loaded, check stock
+    if (!activeProduct.inventory || activeProduct.inventory.quantity <= 0) return;
+    
+    addToCart(activeProduct);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
   return (
@@ -167,19 +160,15 @@ export default function HeroSection() {
                   onClick={handleAddToCart}
                   disabled={isAdding || added}
                   className={`group inline-flex items-center justify-center gap-2 px-8 py-4 text-white font-semibold rounded-full transition-all duration-300 shadow-xl hover:-translate-y-0.5 ${
-                    added ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25" : "bg-brand-gold hover:bg-brand-gold-dark shadow-brand-gold/25"
+                    activeProduct.inventory && activeProduct.inventory.quantity <= 0 ? "bg-gray-500 cursor-not-allowed" : added ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/25" : "bg-brand-gold hover:bg-brand-gold-dark shadow-brand-gold/25"
                   }`}
                 >
-                  {isAdding ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : added ? (
-                    "Added!"
-                  ) : (
-                    <>
-                      <ShoppingBag size={18} />
-                      Add to Cart
-                    </>
-                  )}
+                    <div className="flex items-center gap-2">
+                      {!added && <ShoppingBag size={18} />}
+                      <span className="text-xl font-bold">
+                        {activeProduct.inventory && activeProduct.inventory.quantity <= 0 ? "Out of Stock" : (added ? "Added!" : "Add to Cart")}
+                      </span>
+                    </div>
                 </button>
                 <Link
                   href={`/product/${activeProduct.slug}`}

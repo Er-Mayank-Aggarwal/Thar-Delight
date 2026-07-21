@@ -36,14 +36,16 @@ enum DiscountType {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false)
+  email         String    @unique
+  emailVerified Boolean   @default(false)
   image         String?
   password      String?
   phone         String?
-  role          UserRole @default(CUSTOMER)
+  gender        String?
+  dob           DateTime?
+  role          UserRole  @default(CUSTOMER)
 
   addresses Address[]
   cart      Cart?
@@ -111,10 +113,12 @@ model Address {
   addressLine1 String
   addressLine2 String?
 
-  city    String
-  state   String
-  country String
-  pincode String
+  city     String
+  district String?
+  state    String
+  country  String
+  pincode  String
+  landmark String?
 
   isDefault Boolean @default(false)
 

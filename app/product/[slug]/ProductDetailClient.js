@@ -62,6 +62,7 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
       : "Millets (Bajra/Amaranth/Jowar), Cow Ghee, Jaggery/Sugar",
   };
 
+  const isOutOfStock = product.inventory && product.inventory.quantity <= 0;
   const cartItem = cart.find((item) => item.id === product.id);
   const imageUrl = product.image || product.images?.[0]?.url || "/images/placeholder.png";
 
@@ -168,7 +169,8 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                     <div className="flex items-center border border-brand-sand rounded-full overflow-hidden w-fit">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2.5 text-gray-500 hover:bg-brand-cream hover:text-brand-brown transition-colors text-lg"
+                        disabled={isOutOfStock}
+                        className="px-4 py-2.5 text-gray-500 hover:bg-brand-cream hover:text-brand-brown transition-colors text-lg disabled:opacity-50"
                         aria-label="Decrease quantity"
                       >
                         -
@@ -177,8 +179,13 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                         {quantity}
                       </span>
                       <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-2.5 text-gray-500 hover:bg-brand-cream hover:text-brand-brown transition-colors text-lg"
+                        onClick={() => {
+                          if (product.inventory && quantity < product.inventory.quantity) {
+                            setQuantity(quantity + 1);
+                          }
+                        }}
+                        disabled={isOutOfStock || (product.inventory && quantity >= product.inventory.quantity)}
+                        className="px-4 py-2.5 text-gray-500 hover:bg-brand-cream hover:text-brand-brown transition-colors text-lg disabled:opacity-50"
                         aria-label="Increase quantity"
                       >
                         +
@@ -188,14 +195,24 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                     {/* Add to Cart button */}
                     <button
                       onClick={() => {
+                        if (isOutOfStock) return;
                         addToCart(product, quantity);
                         setAdded(true);
                         setTimeout(() => setAdded(false), 2000);
                       }}
-                      className={`w-full sm:flex-1 py-3.5 text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:-translate-y-0.5 active:scale-95 ${added ? "bg-emerald-500 hover:bg-emerald-600" : "bg-brand-gold hover:bg-brand-gold-dark hover:shadow-brand-gold/25"}`}
+                      disabled={isOutOfStock}
+                      className={`w-full sm:flex-1 py-3.5 text-white font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300 shadow-lg ${
+                        isOutOfStock 
+                          ? "bg-gray-400 cursor-not-allowed" 
+                          : added 
+                            ? "bg-emerald-500 hover:bg-emerald-600 hover:-translate-y-0.5 active:scale-95" 
+                            : "bg-brand-gold hover:bg-brand-gold-dark hover:shadow-brand-gold/25 hover:-translate-y-0.5 active:scale-95"
+                      }`}
                       aria-label="Add to cart"
                     >
-                      {added ? (
+                      {isOutOfStock ? (
+                        "Out of Stock"
+                      ) : added ? (
                         "Added to Cart!"
                       ) : (
                         <>

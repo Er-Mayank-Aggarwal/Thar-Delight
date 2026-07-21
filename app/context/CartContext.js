@@ -33,7 +33,8 @@ export function CartProvider({ children }) {
       });
   }, []);
 
-  const addToCart = async (product, quantity = 1) => {
+  const addToCart = (product, quantity = 1) => {
+    const previousCart = [...cart];
     // Optimistic update
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
@@ -45,44 +46,59 @@ export function CartProvider({ children }) {
       return [...prevCart, { ...product, quantity }];
     });
 
-    // DB update
-    try {
-      await addProductToDbCart(product.id, quantity);
-    } catch (e) {
-      console.error("Failed to add to DB cart", e);
-    }
+    // DB update in background
+    addProductToDbCart(product.id, quantity)
+      .then((res) => {
+        if (res && res.success === false) {
+          setCart(previousCart);
+          alert(res.error);
+        }
+      })
+      .catch((e) => {
+        console.error("Failed to add to DB cart", e);
+        setCart(previousCart);
+        alert("Failed to add to cart");
+      });
   };
 
-  const removeFromCart = async (productId) => {
+  const removeFromCart = (productId) => {
+    const previousCart = [...cart];
     setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-    try {
-      await removeProductFromDbCart(productId);
-    } catch (e) {
+    removeProductFromDbCart(productId).catch((e) => {
       console.error(e);
-    }
+      setCart(previousCart);
+    });
   };
 
-  const updateQuantity = async (productId, quantity) => {
+  const updateQuantity = (productId, quantity) => {
     if (quantity < 1) return removeFromCart(productId);
 
+    const previousCart = [...cart];
     setCart((prevCart) =>
       prevCart.map((item) => (item.id === productId ? { ...item, quantity } : item))
     );
 
-    try {
-      await updateDbCartItemQuantity(productId, quantity);
-    } catch (e) {
-      console.error(e);
-    }
+    updateDbCartItemQuantity(productId, quantity)
+      .then((res) => {
+        if (res && res.success === false) {
+          setCart(previousCart);
+          alert(res.error);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        setCart(previousCart);
+        alert("Failed to update quantity");
+      });
   };
 
-  const clearCart = async () => {
+  const clearCart = () => {
+    const previousCart = [...cart];
     setCart([]);
-    try {
-      await clearDbCart();
-    } catch (e) {
+    clearDbCart().catch((e) => {
       console.error(e);
-    }
+      setCart(previousCart);
+    });
   };
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);

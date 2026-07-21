@@ -16,9 +16,12 @@ export default function ProductCard({ product }) {
   const [isWishlisting, setIsWishlisting] = useState(false);
   const cartItem = cart.find((item) => item.id === product.id);
 
+  const isOutOfStock = product.inventory && product.inventory.quantity <= 0;
+
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isOutOfStock) return;
     if (!cartItem) {
       addToCart(product);
       setAdded(true);
@@ -125,6 +128,13 @@ export default function ProductCard({ product }) {
                 +
               </button>
             </div>
+          ) : isOutOfStock ? (
+            <button
+              disabled
+              className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 text-white text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md bg-gray-400 cursor-not-allowed"
+            >
+              Out of Stock
+            </button>
           ) : (
             <button
               onClick={handleAddToCart}

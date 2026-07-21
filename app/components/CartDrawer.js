@@ -72,6 +72,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                       src={item.image || item.images?.[0]?.url || "/images/placeholder.png"}
                       alt={item.name}
                       fill
+                      sizes="64px"
                       className="object-cover"
                     />
                 </div>
