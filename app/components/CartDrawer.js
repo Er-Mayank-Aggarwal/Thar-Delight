@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useCart } from "../context/CartContext";
 
 export default function CartDrawer({ isOpen, onClose }) {
-  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, loading } = useCart();
 
   return (
     <>
@@ -43,7 +43,12 @@ export default function CartDrawer({ isOpen, onClose }) {
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {cart.length === 0 ? (
+          {loading ? (
+            <div className="h-full flex flex-col items-center justify-center space-y-4">
+              <div className="w-8 h-8 border-4 border-brand-sand border-t-brand-gold rounded-full animate-spin"></div>
+              <p className="text-sm text-gray-500 font-medium animate-pulse">Loading cart...</p>
+            </div>
+          ) : cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
               <div className="w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center text-brand-gold">
                 <ShoppingBag size={32} />

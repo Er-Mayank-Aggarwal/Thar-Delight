@@ -13,7 +13,7 @@ import { CheckCircle2, ShieldCheck, Truck, Lock } from "lucide-react";
 import Link from "next/link";
 
 export default function Checkout() {
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal, clearCart, loading } = useCart();
   const router = useRouter();
   
   const [formData, setFormData] = useState({
@@ -203,6 +203,15 @@ export default function Checkout() {
             </Link>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex flex-col items-center justify-center bg-brand-warm-white py-20">
+        <div className="w-10 h-10 border-4 border-brand-sand border-t-brand-gold rounded-full animate-spin mb-4"></div>
+        <p className="text-brand-brown font-medium animate-pulse">Loading checkout...</p>
       </div>
     );
   }
