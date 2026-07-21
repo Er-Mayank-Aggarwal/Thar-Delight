@@ -155,3 +155,9 @@ h6 {
 .stagger-children>*:nth-child(8) {
   animation-delay: 0.8s;
 }
+
+/* Print-only styles for clean PDF output */
+@media print {
+  #nprogress, .nextjs-toploader { display: none !important; }
+  body { min-height: auto !important; }
+}

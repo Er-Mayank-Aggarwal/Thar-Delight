@@ -16,10 +16,10 @@ export default function LayoutShell({ children }) {
 
   return (
     <CartProvider>
-      <Header />
+      <div id="site-header"><Header /></div>
       <main className="flex-1">{children}</main>
-      <Footer />
-      <RecentSalesNotification />
+      <div id="site-footer"><Footer /></div>
+      <div id="site-notifications"><RecentSalesNotification /></div>
     </CartProvider>
   );
 }

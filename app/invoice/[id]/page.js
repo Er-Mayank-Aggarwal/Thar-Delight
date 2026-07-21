@@ -34,11 +34,21 @@ export default async function InvoicePage({ params }) {
 
   return (
     <>
-      {/* Print-specific styles to force single page */}
+      {/* Hide all layout chrome on invoice page */}
       <style>{`
+        #site-header, #site-footer, #site-notifications,
+        .nextjs-toploader, #nprogress {
+          display: none !important;
+        }
+        main.flex-1 { flex: none !important; }
+        body { min-height: auto !important; }
+
         @media print {
           @page { size: A4; margin: 12mm 14mm; }
-          html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          html, body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
           .invoice-page { box-shadow: none !important; padding: 0 !important; }
         }
       `}</style>
