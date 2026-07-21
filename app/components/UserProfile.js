@@ -1,11 +1,117 @@
 "use client";
 
 import { useState } from "react";
-import { User, MapPin, Package, LogOut, Camera, Edit2, AlertCircle, Trash2, CheckCircle2, Plus } from "lucide-react";
+import { User, MapPin, Package, LogOut, Camera, Edit2, AlertCircle, Trash2, CheckCircle2, Plus, Download, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import { updateUserProfile, addAddress, deleteAddress, setDefaultAddress } from "@/app/actions/user-actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+
+function OrderCard({ order }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border border-brand-sand/60 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="bg-brand-cream/30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-brand-sand/60">
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Order ID</p>
+          <p className="text-sm font-medium text-brand-brown">#{order.id.slice(0,8).toUpperCase()}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Date</p>
+          <p className="text-sm font-medium text-brand-brown">{new Date(order.createdAt).toLocaleDateString("en-IN")}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Total</p>
+          <p className="text-sm font-bold text-brand-brown">₹{order.total.toLocaleString("en-IN")}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+            {order.orderStatus || order.status}
+          </span>
+          <Link 
+            href={`/invoice/${order.id}`}
+            target="_blank"
+            className="flex items-center gap-1.5 px-3 py-1 bg-white border border-brand-sand rounded-full text-xs font-semibold text-brand-brown hover:text-brand-gold transition-colors"
+          >
+            <Download size={14} /> Bill
+          </Link>
+        </div>
+      </div>
+      
+      <div className="p-6">
+        <div className="space-y-4">
+          {order.items.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-4">
+              <div className="relative w-16 h-16 bg-brand-cream rounded-lg overflow-hidden border border-brand-sand/40 flex-shrink-0">
+                <Image src={item.product.image || item.product.images?.[0]?.url || "/images/placeholder.png"} alt={item.product.name} fill className="object-cover" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-medium text-brand-brown line-clamp-1">{item.product.name}</h4>
+                <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+              </div>
+              <div className="text-right font-medium text-sm text-brand-brown">
+                ₹{item.price.toLocaleString("en-IN")}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-brand-sand/40">
+          <button 
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center justify-between w-full text-sm font-semibold text-brand-brown hover:text-brand-gold transition-colors"
+          >
+            <span className="flex items-center gap-2"><FileText size={16}/> Order Status & Tracking</span>
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          
+          {expanded && (
+            <div className="mt-4 p-4 bg-brand-cream/30 rounded-xl space-y-4 text-sm animate-fade-in-up">
+              {order.history && order.history.length > 0 ? (
+                <div className="space-y-4">
+                  {order.history.map((h, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-6 h-6 rounded-full bg-brand-gold text-white flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} />
+                        </div>
+                        {i !== order.history.length - 1 && <div className="w-0.5 h-full bg-brand-sand/60 my-1"></div>}
+                      </div>
+                      <div className="pb-4">
+                        <h4 className="font-semibold text-brand-brown text-sm">{h.status}</h4>
+                        <span className="text-xs text-gray-500">{new Date(h.createdAt).toLocaleString("en-IN")}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">No tracking updates yet.</p>
+              )}
+
+              {order.shipment && (
+                <div className="mt-4 pt-4 border-t border-brand-sand/40">
+                  <h4 className="font-semibold text-brand-brown mb-2">Shipment Details</h4>
+                  <div className="grid grid-cols-2 gap-4 text-gray-600">
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400">Courier</p>
+                      <p>{order.shipment.courierName || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-wider text-gray-400">Tracking #</p>
+                      <p>{order.shipment.trackingNumber || "N/A"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function UserProfile({ user, orders, addresses }) {
   const [activeTab, setActiveTab] = useState("profile");
@@ -241,46 +347,7 @@ export default function UserProfile({ user, orders, addresses }) {
                   ) : (
                     <div className="space-y-6">
                       {orders.map((order) => (
-                        <div key={order.id} className="border border-brand-sand/60 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                          <div className="bg-brand-cream/30 px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-brand-sand/60">
-                            <div>
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Order ID</p>
-                              <p className="text-sm font-medium text-brand-brown">#{order.id.slice(0,8).toUpperCase()}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Date</p>
-                              <p className="text-sm font-medium text-brand-brown">{new Date(order.createdAt).toLocaleDateString("en-IN")}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Total</p>
-                              <p className="text-sm font-bold text-brand-brown">₹{order.total.toLocaleString("en-IN")}</p>
-                            </div>
-                            <div>
-                              <span className="inline-flex px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
-                                {order.status}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <div className="p-6">
-                            <div className="space-y-4">
-                              {order.items.map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-4">
-                                  <div className="relative w-16 h-16 bg-brand-cream rounded-lg overflow-hidden border border-brand-sand/40 flex-shrink-0">
-                                    <Image src={item.product.image || item.product.images?.[0]?.url || "/images/placeholder.png"} alt={item.product.name} fill className="object-cover" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="text-sm font-medium text-brand-brown line-clamp-1">{item.product.name}</h4>
-                                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                                  </div>
-                                  <div className="text-right font-medium text-sm text-brand-brown">
-                                    ₹{item.price.toLocaleString("en-IN")}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
+                        <OrderCard key={order.id} order={order} />
                       ))}
                     </div>
                   )}

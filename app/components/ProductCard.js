@@ -4,10 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Star, Eye, Heart } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { toggleWishlist } from "../actions/wishlist-actions";
 
 export default function ProductCard({ product }) {
+  const router = useRouter();
   const { cart, addToCart, updateQuantity } = useCart();
   const [added, setAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -57,7 +59,10 @@ export default function ProductCard({ product }) {
     : (product.rating || 5);
 
   return (
-    <div className="group relative bg-white rounded-2xl overflow-hidden border border-brand-sand/60 hover:border-brand-gold/30 transition-all duration-500 hover:shadow-xl hover:shadow-brand-gold/10 hover:-translate-y-1 cursor-pointer">
+    <div 
+      onClick={() => router.push(`/product/${product.slug}`)}
+      className="group relative bg-white rounded-2xl overflow-hidden border border-brand-sand/60 hover:border-brand-gold/30 transition-all duration-500 hover:shadow-xl hover:shadow-brand-gold/10 hover:-translate-y-1 cursor-pointer"
+    >
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-brand-cream">
         <Image

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { productSchema } from "@/lib/validations";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
 export async function getAllProducts() {
   return await prisma.product.findMany({
@@ -155,8 +155,33 @@ export async function deleteProduct(id) {
   }
 }
 
-export async function getAllCategories() {
-  return await prisma.category.findMany({
-    orderBy: { name: "asc" }
-  });
-}
+export const getAllCategories = unstable_cache(
+  async () => {
+    return await prisma.category.findMany({
+      orderBy: { name: "asc" }
+    });
+  },
+  ["all-categories"],
+  { revalidate: 3600 }
+);
+
+export const getHeroProductRatings = unstable_cache(
+  async (slugs) => {
+    const products = await prisma.product.findMany({
+      where: { slug: { in: slugs } },
+      select: {
+        slug: true,
+        reviews: { where: { isPublished: true }, select: { rating: true } }
+      }
+    });
+    return products.map(p => ({
+      slug: p.slug,
+      count: p.reviews.length,
+      avg: p.reviews.length > 0
+        ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1)
+        : "0.0"
+    }));
+  },
+  ["hero-product-ratings"],
+  { revalidate: 300 }
+);

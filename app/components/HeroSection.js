@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ArrowRight, ShoppingBag, Star, Leaf, Loader2 } from "lucide-react";
 import { products } from "../data/products";
 import { useCart } from "../context/CartContext";
-import { getProductBySlug } from "../actions/product-actions";
+import { getProductBySlug, getHeroProductRatings } from "../actions/product-actions";
 
 // Select 6 products for the circular wheel
 const wheelProducts = products.slice(0, 6);
@@ -27,12 +27,37 @@ export default function HeroSection() {
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const [realProducts, setRealProducts] = useState(wheelProducts);
+
   // Auto-rotate every 5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % wheelProducts.length);
+      setActiveIndex((prev) => (prev + 1) % realProducts.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, [realProducts.length]);
+
+  // Fetch real ratings on mount (single batched + cached call)
+  useEffect(() => {
+    const fetchRatings = async () => {
+      try {
+        const slugs = wheelProducts.map(p => p.slug);
+        const ratings = await getHeroProductRatings(slugs);
+        const ratingMap = {};
+        ratings.forEach(r => { ratingMap[r.slug] = r; });
+        const updated = wheelProducts.map(p => {
+          const r = ratingMap[p.slug];
+          if (r) {
+            return { ...p, rating: r.count > 0 ? r.avg : 0, reviews: r.count };
+          }
+          return p;
+        });
+        setRealProducts(updated);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchRatings();
   }, []);
 
   // Update circle radius based on screen size
@@ -52,7 +77,7 @@ export default function HeroSection() {
     return () => window.removeEventListener("resize", updateRadius);
   }, []);
 
-  const activeProduct = wheelProducts[activeIndex];
+  const activeProduct = realProducts[activeIndex];
   const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
   const baseAngle = radius < 400 ? 90 : 180;
 
@@ -183,7 +208,7 @@ export default function HeroSection() {
               }}
             >
               {/* Product Images Cross-Fading with Slow Cinematic Zoom (Ken Burns effect) */}
-              {wheelProducts.map((product, idx) => {
+              {realProducts.map((product, idx) => {
                 const isActive = idx === activeIndex;
                 return (
                   <div
@@ -226,7 +251,7 @@ export default function HeroSection() {
               }}
             >
               {/* Product selector nodes placed on the circle rim */}
-              {wheelProducts.map((product, idx) => {
+              {realProducts.map((product, idx) => {
                 const angle = baseAngle + idx * 60; // Dynamic base angle based on screen size
                 const isActive = idx === activeIndex;
 

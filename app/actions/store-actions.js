@@ -56,3 +56,16 @@ export const getRecentSales = unstable_cache(
   ["recent-sales-popup"],
   { revalidate: 300 } // Cache for 5 minutes to avoid spamming the DB
 );
+
+export const getStoreSettings = unstable_cache(
+  async () => {
+    try {
+      return await prisma.setting.findFirst();
+    } catch (error) {
+      console.error("Failed to fetch store settings:", error);
+      return null;
+    }
+  },
+  ["store-settings"],
+  { revalidate: 3600 } // 1 hour — settings rarely change
+);

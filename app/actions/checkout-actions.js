@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth";
 import { placeOrderSchema } from "@/lib/validations";
 import { checkoutLimiter } from "@/lib/rateLimit";
 import { validateCoupon } from "./coupon-validate-actions";
+import { revalidatePath } from "next/cache";
 
 export async function placeOrder(formData) {
   try {
@@ -160,6 +161,9 @@ export async function placeOrder(formData) {
 
       return order.id;
     });
+
+    // Revalidate account page so order history is immediately fresh
+    revalidatePath("/account");
 
     return { success: true, orderId: orderId };
   } catch (error) {

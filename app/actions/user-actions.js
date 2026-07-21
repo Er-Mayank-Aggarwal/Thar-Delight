@@ -40,6 +40,11 @@ export async function getUserOrders() {
       where: { userId },
       orderBy: { createdAt: "desc" },
       include: {
+        history: {
+          orderBy: { createdAt: "asc" }
+        },
+        shipment: true,
+        address: true,
         items: {
           include: {
             product: {
