@@ -31,6 +31,7 @@ export default function Checkout() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   
@@ -122,10 +123,38 @@ export default function Checkout() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    
+    // Clear error for this field when user types
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const form = e.target;
+
+    if (!form.checkValidity()) {
+      const errors = {};
+      const elements = form.elements;
+      let firstInvalid = null;
+      
+      for (let i = 0; i < elements.length; i++) {
+        if (!elements[i].validity.valid && elements[i].name) {
+          errors[elements[i].name] = elements[i].validationMessage;
+          if (!firstInvalid) firstInvalid = elements[i];
+        }
+      }
+      setFormErrors(errors);
+      
+      if (firstInvalid) {
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus();
+      }
+      return;
+    }
+
+    setFormErrors({});
     setIsSubmitting(true);
     setError(null);
 
@@ -248,7 +277,7 @@ export default function Checkout() {
           {/* Left Column: Form */}
           <div className="flex-1 order-2 lg:order-1">
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-brand-sand/60 shadow-sm">
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} noValidate className="space-y-8">
                 
                 {error && (
                   <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
@@ -265,19 +294,23 @@ export default function Checkout() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5 sm:col-span-2">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</label>
-                      <input type="email" name="email" required value={formData.email} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="hello@example.com" />
+                      <input type="email" name="email" required value={formData.email} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.email ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="hello@example.com" />
+                      {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">First Name</label>
-                      <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="Rahul" />
+                      <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.firstName ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Rahul" />
+                      {formErrors.firstName && <p className="text-red-500 text-xs mt-1">{formErrors.firstName}</p>}
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Name</label>
-                      <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="Sharma" />
+                      <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.lastName ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Sharma" />
+                      {formErrors.lastName && <p className="text-red-500 text-xs mt-1">{formErrors.lastName}</p>}
                     </div>
                     <div className="space-y-1.5 sm:col-span-2">
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone Number</label>
-                      <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} maxLength="10" pattern="[0-9]{10}" title="10 digit phone number" className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors" />
+                      <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} maxLength="10" pattern="[0-9]{10}" title="10 digit phone number" className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown focus:outline-none focus:border-brand-gold transition-colors ${formErrors.phone ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} />
+                      {formErrors.phone && <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>}
                     </div>
                   </div>
                 </section>
@@ -318,19 +351,23 @@ export default function Checkout() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5 sm:col-span-2">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Street Address</label>
-                        <input type="text" name="address" required value={formData.address} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="123 Market Street, Apt 4" />
+                        <input type="text" name="address" required value={formData.address} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.address ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="123 Market Street, Apt 4" />
+                        {formErrors.address && <p className="text-red-500 text-xs mt-1">{formErrors.address}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">City</label>
-                        <input type="text" name="city" required value={formData.city} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="Mumbai" />
+                        <input type="text" name="city" required value={formData.city} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.city ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Mumbai" />
+                        {formErrors.city && <p className="text-red-500 text-xs mt-1">{formErrors.city}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">State</label>
-                        <input type="text" name="state" required value={formData.state} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="Maharashtra" />
+                        <input type="text" name="state" required value={formData.state} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.state ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="Maharashtra" />
+                        {formErrors.state && <p className="text-red-500 text-xs mt-1">{formErrors.state}</p>}
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">ZIP / Postal Code</label>
-                        <input type="text" name="zipCode" required value={formData.zipCode} onChange={handleChange} className="w-full px-4 py-3 bg-brand-cream/50 border border-brand-sand rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors" placeholder="400001" />
+                        <input type="text" name="zipCode" required value={formData.zipCode} onChange={handleChange} className={`w-full px-4 py-3 bg-brand-cream/50 border rounded-xl text-brand-brown placeholder-gray-400 focus:outline-none focus:border-brand-gold transition-colors ${formErrors.zipCode ? 'border-red-500 bg-red-50/50' : 'border-brand-sand'}`} placeholder="400001" />
+                        {formErrors.zipCode && <p className="text-red-500 text-xs mt-1">{formErrors.zipCode}</p>}
                       </div>
                       
                       <div className="mt-4 flex items-center gap-2 sm:col-span-2">
