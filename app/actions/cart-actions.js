@@ -58,22 +58,56 @@ async function getDbCartId() {
   return cart.id;
 }
 
-export async function addProductToDbCart(productId, quantity = 1) {
+import { products as staticProducts } from "@/app/data/products";
+
+async function resolveProduct(identifier) {
+  if (!identifier) return null;
+
+  let dbProd = await prisma.product.findFirst({
+    where: {
+      OR: [
+        { id: identifier },
+        { slug: identifier }
+      ]
+    },
+    include: { inventory: true }
+  });
+
+  if (!dbProd) {
+    const staticP = staticProducts.find(p => p.id === identifier || p.slug === identifier);
+    if (staticP) {
+      dbProd = await prisma.product.findUnique({
+        where: { slug: staticP.slug },
+        include: { inventory: true }
+      });
+    }
+  }
+
+  return dbProd;
+}
+
+export async function addProductToDbCart(productIdOrSlug, quantity = 1) {
   const cartId = await getDbCartId();
   if (!cartId) return null;
 
-  const inventory = await prisma.inventory.findUnique({ where: { productId } });
+  const product = await resolveProduct(productIdOrSlug);
+  if (!product) {
+    return { success: false, error: "Product not found" };
+  }
+
+  const realProductId = product.id;
+  const inventory = product.inventory;
   
   const existingItem = await prisma.cartItem.findFirst({
     where: {
       cartId,
-      productId,
+      productId: realProductId,
     },
   });
   
   const totalQuantity = (existingItem?.quantity || 0) + quantity;
   if (inventory && inventory.quantity < totalQuantity) {
-    return { success: false, error: "Product is out of stock or requested quantity exceeds available stock" };
+    return { success: false, error: `Only ${inventory.quantity} units available in stock` };
   }
 
   if (existingItem) {
@@ -85,7 +119,7 @@ export async function addProductToDbCart(productId, quantity = 1) {
     await prisma.cartItem.create({
       data: {
         cartId,
-        productId,
+        productId: realProductId,
         quantity,
       },
     });
@@ -94,42 +128,49 @@ export async function addProductToDbCart(productId, quantity = 1) {
   return { success: true };
 }
 
-export async function removeProductFromDbCart(productId) {
+export async function removeProductFromDbCart(productIdOrSlug) {
   const cartId = await getDbCartId();
   if (!cartId) return null;
   
+  const product = await resolveProduct(productIdOrSlug);
+  if (!product) return;
+
   await prisma.cartItem.deleteMany({
     where: {
       cartId,
-      productId,
+      productId: product.id,
     },
   });
 }
 
-export async function updateDbCartItemQuantity(productId, quantity) {
+export async function updateDbCartItemQuantity(productIdOrSlug, quantity) {
   if (quantity < 1) {
-    await removeProductFromDbCart(productId);
+    await removeProductFromDbCart(productIdOrSlug);
     return { success: true };
   }
 
   const cartId = await getDbCartId();
   if (!cartId) return null;
   
-  const inventory = await prisma.inventory.findUnique({ where: { productId } });
+  const product = await resolveProduct(productIdOrSlug);
+  if (!product) return { success: false, error: "Product not found" };
+
+  const inventory = product.inventory;
   if (inventory && inventory.quantity < quantity) {
-    return { success: false, error: "Requested quantity exceeds available stock" };
+    return { success: false, error: `Only ${inventory.quantity} units available in stock` };
   }
   
   await prisma.cartItem.updateMany({
     where: {
       cartId,
-      productId,
+      productId: product.id,
     },
     data: { quantity },
   });
   
   return { success: true };
 }
+
 
 export async function clearDbCart() {
   const cartId = await getDbCartId();
