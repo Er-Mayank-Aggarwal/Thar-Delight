@@ -21,7 +21,7 @@ export async function getDbCart() {
     where: { userId },
     include: {
       items: {
-        include: { product: { include: { images: { where: { isPrimary: true }, take: 1 } } } },
+        include: { product: { include: { inventory: true, images: { where: { isPrimary: true }, take: 1 } } } },
         orderBy: { createdAt: "asc" }
       },
     },
@@ -31,10 +31,11 @@ export async function getDbCart() {
     cart = await prisma.cart.create({
       data: { userId },
       include: {
-        items: { include: { product: { include: { images: { where: { isPrimary: true }, take: 1 } } } } },
+        items: { include: { product: { include: { inventory: true, images: { where: { isPrimary: true }, take: 1 } } } } },
       },
     });
   }
+
 
   return cart;
 }

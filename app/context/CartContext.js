@@ -34,7 +34,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id);
+    const existingItem = cart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
     const currentQty = existingItem ? existingItem.quantity : 0;
     const maxStock = product.inventory?.quantity ?? product.stock ?? product.quantityInStock ?? 999;
 
@@ -46,17 +46,20 @@ export function CartProvider({ children }) {
     const previousCart = [...cart];
     // Optimistic update
     setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === product.id);
+      const existing = prevCart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
       if (existing) {
         return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id || (item.slug && item.slug === product.slug)
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         );
       }
       return [...prevCart, { ...product, quantity }];
     });
 
     // DB update in background
-    addProductToDbCart(product.id, quantity)
+    const targetIdentifier = product.slug || product.id;
+    addProductToDbCart(targetIdentifier, quantity)
       .then((res) => {
         if (res && res.success === false) {
           setCart(previousCart);
@@ -70,19 +73,19 @@ export function CartProvider({ children }) {
       });
   };
 
-  const removeFromCart = (productId) => {
+  const removeFromCart = (productIdOrSlug) => {
     const previousCart = [...cart];
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
-    removeProductFromDbCart(productId).catch((e) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== productIdOrSlug && item.slug !== productIdOrSlug));
+    removeProductFromDbCart(productIdOrSlug).catch((e) => {
       console.error(e);
       setCart(previousCart);
     });
   };
 
-  const updateQuantity = (productId, quantity) => {
-    if (quantity < 1) return removeFromCart(productId);
+  const updateQuantity = (productIdOrSlug, quantity) => {
+    if (quantity < 1) return removeFromCart(productIdOrSlug);
 
-    const item = cart.find((i) => i.id === productId);
+    const item = cart.find((i) => i.id === productIdOrSlug || i.slug === productIdOrSlug);
     const maxStock = item?.inventory?.quantity ?? item?.stock ?? item?.quantityInStock ?? 999;
 
     if (quantity > maxStock) {
@@ -92,10 +95,12 @@ export function CartProvider({ children }) {
 
     const previousCart = [...cart];
     setCart((prevCart) =>
-      prevCart.map((item) => (item.id === productId ? { ...item, quantity } : item))
+      prevCart.map((item) =>
+        item.id === productIdOrSlug || item.slug === productIdOrSlug ? { ...item, quantity } : item
+      )
     );
 
-    updateDbCartItemQuantity(productId, quantity)
+    updateDbCartItemQuantity(productIdOrSlug, quantity)
       .then((res) => {
         if (res && res.success === false) {
           setCart(previousCart);
@@ -108,6 +113,7 @@ export function CartProvider({ children }) {
         alert("Failed to update quantity");
       });
   };
+
 
 
   const clearCart = () => {

@@ -14,7 +14,8 @@ export default function ProductCard({ product }) {
   const [added, setAdded] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isWishlisting, setIsWishlisting] = useState(false);
-  const cartItem = cart.find((item) => item.id === product.id);
+  const cartItem = cart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
+
 
   const isOutOfStock = product.inventory && product.inventory.quantity <= 0;
 
@@ -46,9 +47,10 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
     if (cartItem) {
-      updateQuantity(product.id, cartItem.quantity + increment);
+      updateQuantity(product.slug || product.id, cartItem.quantity + increment);
     }
   };
+
 
   const hasDiscount = Boolean(product.originalPrice && Number(product.originalPrice) > Number(product.price));
   const discount = hasDiscount

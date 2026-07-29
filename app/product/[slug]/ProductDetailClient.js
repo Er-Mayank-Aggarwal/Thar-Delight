@@ -12,8 +12,14 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
   const { cart, addToCart, updateQuantity } = useCart();
   const [mainTitle, subTitle] = (product.name || "").split("|").map((s) => s.trim());
   const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
+  const cartItem = cart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
+  const availableStock = product.inventory?.quantity ?? product.stock ?? 999;
+  const isOutOfStock = availableStock <= 0;
   const [activeTab, setActiveTab] = useState("description");
+  const [added, setAdded] = useState(false);
+
+
+
 
 
   // Review states
@@ -64,9 +70,8 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
       : "Millets (Bajra/Amaranth/Jowar), Cow Ghee, Jaggery/Sugar",
   };
 
-  const isOutOfStock = product.inventory && product.inventory.quantity <= 0;
-  const cartItem = cart.find((item) => item.id === product.id);
   const imageUrl = product.image || product.images?.[0]?.url || "/images/placeholder.png";
+
 
   return (
     <div className="bg-brand-warm-white min-h-screen py-4 sm:py-10">

@@ -34,9 +34,11 @@ async function main() {
 
   console.log('Inserting products, images, and inventory...');
   
-  for (const productData of products) {
+  for (let idx = 0; idx < products.length; idx++) {
+    const productData = products[idx];
     const invData = inventory.find(i => i.productId === productData.id);
-    const isFeatured = productData.badge === "Best Seller" || productData.badge === "Popular" || productData.badge === "Sale";
+    const isFeatured = idx < 4 || productData.badge === "Best Seller" || productData.badge === "Popular" || Boolean(productData.badge);
+
 
     const createdProduct = await prisma.product.create({
       data: {

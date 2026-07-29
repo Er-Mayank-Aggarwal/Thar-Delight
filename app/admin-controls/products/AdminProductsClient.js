@@ -99,19 +99,24 @@ export default function AdminProductsClient({ initialProducts, categories }) {
     }
 
     if (result.success) {
+      if (result.data) {
+        if (editingProduct) {
+          setProductList((prev) => prev.map((p) => (p.id === result.data.id ? { ...p, ...result.data } : p)));
+        } else {
+          setProductList((prev) => [result.data, ...prev]);
+        }
+      }
       setShowModal(false);
       setEditingProduct(null);
       setFormData(emptyForm);
-      // Refresh the page data from the server
       router.refresh(); 
-      // Update local state optimisticially or reload. We will just use router.refresh() 
-      // to trigger a server re-render of this page which updates initialProducts.
     } else {
       setError(result.error);
     }
 
     setSaving(false);
   };
+
 
   // Update local state when initialProducts changes (from router.refresh())
   if (initialProducts !== productList && !saving) {
