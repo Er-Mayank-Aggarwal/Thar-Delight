@@ -136,7 +136,11 @@ export async function updateOrderStatus(orderId, newStatus) {
       }
     });
 
+    revalidatePath("/account");
+    revalidatePath("/admin-controls/orders");
+
     return { success: true };
+
   } catch (error) {
     console.error("Failed to update order status:", error);
     return { success: false, error: "Failed to update order status" };

@@ -42,24 +42,12 @@ export async function placeOrder(formData) {
       return { success: false, error: "Your cart is empty" };
     }
 
-    // 2. Check inventory for all items
-    const outOfStockItems = [];
+    // 2. Preliminary inventory check (fast-fail before entering transaction)
     for (const item of cart.items) {
       const inventory = item.product.inventory;
       if (!inventory || inventory.quantity < item.quantity) {
-        outOfStockItems.push({
-          name: item.product.name,
-          available: inventory?.quantity || 0,
-          requested: item.quantity,
-        });
+        return { success: false, error: `Insufficient stock for: ${item.product.name} (only ${inventory?.quantity || 0} available)` };
       }
-    }
-
-    if (outOfStockItems.length > 0) {
-      const itemNames = outOfStockItems.map(
-        (i) => `${i.name} (only ${i.available} available)`
-      ).join(", ");
-      return { success: false, error: `Insufficient stock for: ${itemNames}` };
     }
 
     // 3. Calculate Totals (server-side, never trust client)
@@ -90,6 +78,16 @@ export async function placeOrder(formData) {
 
     // Begin Transaction for all write operations
     const orderId = await prisma.$transaction(async (tx) => {
+
+      // Re-check inventory INSIDE transaction to prevent overselling
+      for (const item of cart.items) {
+        const freshInventory = await tx.inventory.findUnique({
+          where: { productId: item.productId }
+        });
+        if (!freshInventory || freshInventory.quantity < item.quantity) {
+          throw new Error(`Insufficient stock for: ${item.product.name} (only ${freshInventory?.quantity || 0} available)`);
+        }
+      }
       
       // Update coupon usage count safely inside transaction
       if (validCouponCode) {
@@ -172,6 +170,7 @@ export async function placeOrder(formData) {
 
       return order.id;
     });
+
 
     // Revalidate account page so order history is immediately fresh
     revalidatePath("/account");

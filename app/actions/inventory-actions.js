@@ -51,6 +51,9 @@ export async function updateStock(productId, newStock) {
 
     // Revalidate the inventory page so it reflects new data
     revalidatePath("/admin-controls/inventory");
+    revalidatePath("/shop");
+    revalidatePath("/product/[slug]", "page");
+
     
     return { success: true, data: updated };
   } catch (error) {
