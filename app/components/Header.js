@@ -24,6 +24,8 @@ const navLinks = [
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -42,141 +44,231 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+
+      // Scrolled past 20px
+      if (currentScrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+
+      // Hide navbar when scrolling DOWN past 150px, show immediately when scrolling UP anywhere
+      if (currentScrollY > 150 && currentScrollY > lastScrollY) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
     };
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   return (
     <>
-      {/* Top Announcement Bar */}
-      <div className="bg-brand-brown text-brand-cream text-center py-2 px-4 text-xs sm:text-sm tracking-wide">
-        <p>
-          🌾 Free shipping on orders above ₹500 |{" "}
-          <span className="text-brand-gold font-semibold">
-            Use code THAR10 for 10% off
-          </span>
-        </p>
-      </div>
-
-      {/* Main Header */}
-      <header
-        className={`sticky top-0 z-50 transition-all duration-500 border-b border-brand-sand/40 ${
-          isScrolled
-            ? "bg-white/95 backdrop-blur-md shadow-md shadow-black/5"
-            : "bg-white"
-        }`}
+      <div
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"
+          }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div 
-            className={`flex items-center justify-between transition-all duration-500 ease-in-out ${
-              isScrolled ? "h-16" : "h-24 sm:h-28"
+        {/* Top Announcement Bar */}
+        <div
+          className={`bg-brand-brown text-brand-cream text-center transition-all duration-300 tracking-wide ${isScrolled
+            ? "h-0 py-0 opacity-0 overflow-hidden"
+            : "py-2 px-4 text-xs sm:text-sm opacity-100"
             }`}
-          >
-            {/* Left: Mobile Menu Toggle & Logo */}
-            <div className="flex items-center gap-3">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-brand-brown hover:text-brand-gold transition-colors -ml-2"
-                aria-label="Toggle menu"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-
-              {/* Logo (aligned left) */}
-              <Link href="/" className="flex-shrink-0 group flex items-center">
-                <Image
-                  src="/images/logo.png"
-                  alt="Thar Delight"
-                  width={200}
-                  height={200}
-                  className={`w-auto transition-all duration-500 ease-in-out group-hover:scale-102 ${
-                    isScrolled
-                      ? "h-10 sm:h-11" // Compact logo on scroll
-                      : "h-14 sm:h-18 lg:h-20" // Large logo at top
-                  }`}
-                  priority
-                />
-              </Link>
-            </div>
-
-            {/* Center: Navigation Links (Desktop) */}
-            <nav className="hidden lg:block">
-              <ul className="flex items-center gap-2">
-                {navLinks.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="relative px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-brown hover:text-brand-gold transition-colors duration-300 group"
-                    >
-                      {link.name}
-                      <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-3/4" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            {/* Right: Utility Icons (Right-aligned) */}
-            <div className="flex items-center gap-1 sm:gap-3 justify-end">
-              {/* Search */}
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-2 text-brand-brown hover:text-brand-gold transition-colors"
-                aria-label="Search"
-              >
-                <Search size={20} />
-              </button>
-
-              {/* Account */}
-              <Link
-                href="/account"
-                className="p-2 text-brand-brown hover:text-brand-gold transition-colors block"
-                aria-label="My Account"
-              >
-                <User size={20} />
-              </Link>
-
-              {/* Cart */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-brand-brown hover:text-brand-gold transition-colors"
-                aria-label="Shopping Cart"
-              >
-                <ShoppingBag size={20} />
-                {cartCount >= 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-brand-gold text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
+        >
+          <p>
+            🌾 Free shipping on orders above ₹500 🌾{" "}
+            {/* <span className="text-brand-gold font-semibold">
+              Use code THAR10 for 10% off
+            </span> */}
+          </p>
         </div>
 
-        {/* Search Overlay */}
-        {isSearchOpen && (
-          <div className="absolute inset-x-0 top-full bg-white shadow-xl border-t border-brand-sand animate-fade-in-up">
-            <div className="max-w-2xl mx-auto p-4 sm:p-6">
-              <form onSubmit={handleSearchSubmit} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for products, categories..."
-                  className="w-full pl-5 pr-12 py-3 sm:px-6 sm:py-4 bg-brand-cream rounded-full text-brand-brown placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/40 text-base sm:text-lg"
-                  autoFocus
-                />
-                <button type="submit" className="absolute right-5 top-1/2 -translate-y-1/2 text-brand-gold hover:text-brand-gold-dark">
+        {/* Main Header */}
+        <header
+          className={`transition-all duration-300 border-b border-brand-sand/40 ${isScrolled
+            ? "bg-white/90 backdrop-blur-md shadow-lg shadow-black/5"
+            : "bg-white shadow-sm"
+            }`}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+              className={`flex items-center justify-between transition-all duration-300 ease-in-out ${isScrolled ? "h-16" : "h-20 sm:h-24"
+                }`}
+            >
+
+              {/* Left: Mobile Menu Toggle & Logo */}
+              <div className="flex items-center gap-3">
+                {/* Mobile Menu Button */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden p-2 text-brand-brown hover:text-brand-gold transition-colors -ml-2"
+                  aria-label="Toggle menu"
+                >
+                  {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+
+                {/* Logo (aligned left) */}
+                <Link href="/" className="flex-shrink-0 group flex items-center">
+                  <Image
+                    src="/images/logo.png"
+                    alt="Thar Delight"
+                    width={200}
+                    height={200}
+                    className={`w-auto transition-all duration-500 ease-in-out group-hover:scale-102 ${isScrolled
+                      ? "h-10 sm:h-11" // Compact logo on scroll
+                      : "h-14 sm:h-18 lg:h-20" // Large logo at top
+                      }`}
+                    priority
+                  />
+                </Link>
+              </div>
+
+              {/* Center: Navigation Links (Desktop) */}
+              <nav className="hidden lg:block">
+                <ul className="flex items-center gap-2">
+                  {navLinks.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="relative px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-brown hover:text-brand-gold transition-colors duration-300 group"
+                      >
+                        {link.name}
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-3/4" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              {/* Right: Utility Icons (Right-aligned) */}
+              <div className="flex items-center gap-1 sm:gap-3 justify-end">
+                {/* Search */}
+                <button
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  className="p-2 text-brand-brown hover:text-brand-gold transition-colors"
+                  aria-label="Search"
+                >
                   <Search size={20} />
                 </button>
-              </form>
+
+                {/* Account */}
+                <Link
+                  href="/account"
+                  className="p-2 text-brand-brown hover:text-brand-gold transition-colors block"
+                  aria-label="My Account"
+                >
+                  <User size={20} />
+                </Link>
+
+                {/* Cart */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2 text-brand-brown hover:text-brand-gold transition-colors"
+                  aria-label="Shopping Cart"
+                >
+                  <ShoppingBag size={20} />
+                  {cartCount >= 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-brand-gold text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        )}
-      </header>
+
+          {/* Search Modal Overlay */}
+          {isSearchOpen && (
+            <div className="fixed inset-0 z-[100] flex items-start justify-center pt-20 sm:pt-28 px-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+              <div 
+                className="bg-white w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-brand-sand/60 relative animate-scale-up"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-brand-sand/40">
+                  <h3 className="font-serif text-lg text-brand-brown font-semibold flex items-center gap-2">
+                    <Search size={18} className="text-brand-gold" />
+                    Search Thar Delight
+                  </h3>
+                  <button
+                    onClick={() => setIsSearchOpen(false)}
+                    className="p-1.5 text-gray-400 hover:text-brand-brown hover:bg-brand-cream rounded-full transition-all"
+                    aria-label="Close search"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSearchSubmit} className="relative mb-6">
+                  <div className="relative flex items-center">
+                    <Search size={22} className="absolute left-5 text-brand-gold" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search cookies, snacks, farali treats..."
+                      className="w-full pl-14 pr-24 py-4 bg-brand-cream/60 border border-brand-sand/50 rounded-2xl text-brand-brown font-medium placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:bg-white text-base sm:text-lg transition-all"
+                      autoFocus
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-24 text-gray-400 hover:text-brand-brown text-xs font-semibold px-2 py-1"
+                      >
+                        Clear
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="absolute right-3 px-5 py-2.5 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-brand-gold/20"
+                    >
+                      Search
+                    </button>
+                  </div>
+                </form>
+
+                {/* Quick Search Suggestions */}
+                <div>
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-3">Popular Searches</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { name: "🍪 Millet Cookies", query: "millet-cookies" },
+                      { name: "✨ Millet Snacks", query: "millet-snacks" },
+                      { name: "🌾 Farali", query: "farali" },
+                      { name: "Ajwain Cookies", query: "ajwain" },
+                      { name: "Dark Chocolate", query: "chocolate" },
+                    ].map((tag) => (
+                      <button
+                        key={tag.name}
+                        onClick={() => {
+                          router.push(`/shop?search=${encodeURIComponent(tag.query)}`);
+                          setIsSearchOpen(false);
+                        }}
+                        className="px-3.5 py-1.5 bg-brand-cream hover:bg-brand-gold/15 text-brand-brown hover:text-brand-gold rounded-full text-xs font-semibold border border-brand-sand/40 transition-all"
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Click outside to close */}
+              <div className="absolute inset-0 -z-10" onClick={() => setIsSearchOpen(false)} />
+            </div>
+          )}
+
+        </header>
+      </div>
+
+      {/* Spacer to prevent page content overlap under fixed header */}
+      <div className="h-28 sm:h-32" />
+
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (

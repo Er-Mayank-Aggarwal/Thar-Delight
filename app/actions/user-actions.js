@@ -20,6 +20,7 @@ export async function getUserProfile() {
         id: true,
         name: true,
         email: true,
+        image: true,
         phone: true,
         gender: true,
         dob: true,
@@ -32,6 +33,32 @@ export async function getUserProfile() {
     return null;
   }
 }
+
+export async function updateUserAvatar(imageDataUrl) {
+  const userId = await getUserId();
+  if (!userId) return { success: false, error: "Not authenticated" };
+
+  if (!imageDataUrl || typeof imageDataUrl !== "string") {
+    return { success: false, error: "Invalid image data" };
+  }
+
+  // Prevent giant payload DOS (max 5MB base64)
+  if (imageDataUrl.length > 5 * 1024 * 1024) {
+    return { success: false, error: "Image file is too large. Please select an image under 5MB." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { image: imageDataUrl }
+    });
+    return { success: true };
+  } catch (e) {
+    console.error(e);
+    return { success: false, error: "Failed to update profile picture" };
+  }
+}
+
 
 export async function getUserOrders() {
   const userId = await getUserId();

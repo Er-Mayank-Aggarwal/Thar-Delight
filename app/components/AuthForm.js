@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { User, Lock, Mail, UserPlus, LogIn, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Lock, Mail, UserPlus, LogIn, CheckCircle2, AlertCircle, Eye, EyeOff, Sparkles } from "lucide-react";
 import { signIn, signUp, signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Google Logo SVG component
 function GoogleLogo({ size = 18 }) {
@@ -30,7 +30,16 @@ function GoogleLogo({ size = 18 }) {
 }
 
 export default function AuthForm() {
-  const [isLogin, setIsLogin] = useState(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
+
+  const [isLogin, setIsLogin] = useState(mode !== "register");
+  const [registerNotice, setRegisterNotice] = useState(
+    mode === "register" ? "Please sign up or log in to complete your checkout order." : null
+  );
+  const [successNotice, setSuccessNotice] = useState(null);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -43,11 +52,18 @@ export default function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+
+  useEffect(() => {
+    if (mode === "register") {
+      setIsLogin(false);
+      setRegisterNotice("Please sign up or log in to complete your checkout order.");
+    }
+  }, [mode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setSuccessNotice(null);
     setIsLoading(true);
 
     try {
@@ -67,7 +83,8 @@ export default function AuthForm() {
         setSubmitted(true);
         setTimeout(() => {
           router.refresh();
-        }, 1500);
+          router.push("/checkout");
+        }, 1200);
       } else {
         // Register with Better Auth
         if (formData.password !== formData.confirmPassword) {
@@ -88,10 +105,15 @@ export default function AuthForm() {
           return;
         }
 
-        setSubmitted(true);
-        setTimeout(() => {
-          router.refresh();
-        }, 1500);
+        // On successful registration -> Redirect to Login Page tab!
+        setSuccessNotice("Registration successful! Please sign in with your email and password.");
+        setIsLogin(true); // Switch tab to Sign In!
+        setFormData((prev) => ({
+          ...prev,
+          password: "",
+          confirmPassword: "",
+        }));
+        setRegisterNotice(null);
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -99,6 +121,7 @@ export default function AuthForm() {
 
     setIsLoading(false);
   };
+
 
   const handleGoogleSignIn = async () => {
     setError(null);
@@ -212,12 +235,27 @@ export default function AuthForm() {
 
               {/* Email/Password Form */}
               <form onSubmit={handleSubmit} className="space-y-5">
+                {successNotice && (
+                  <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5 animate-fade-in-up">
+                    <Sparkles size={18} className="text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs sm:text-sm text-emerald-800 font-semibold">{successNotice}</p>
+                  </div>
+                )}
+
+                {registerNotice && (
+                  <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 animate-fade-in-up">
+                    <AlertCircle size={18} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs sm:text-sm text-amber-800 font-semibold">{registerNotice}</p>
+                  </div>
+                )}
+
                 {error && (
                   <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-fade-in-up">
                     <AlertCircle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-red-600 font-medium">{error}</p>
                   </div>
                 )}
+
                 
                 {/* Registration specific fields */}
                 {!isLogin && (

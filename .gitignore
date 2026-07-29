@@ -37,4 +37,16 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma generated client
 /app/generated/prisma
+/generated
+
+# npm cache & logs
+/npm-cache
+*.log
+
+# ide & OS files
+.vscode/
+.idea/
+*.swp
+*.swo

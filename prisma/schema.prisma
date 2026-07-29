@@ -125,6 +125,8 @@ model Address {
 
   createdAt DateTime @default(now())
   orders    Order[]
+
+  @@index([userId])
 }
 
 model Category {
@@ -221,6 +223,9 @@ model CartItem {
   quantity Int
 
   createdAt DateTime @default(now())
+
+  @@index([cartId])
+  @@index([productId])
 }
 
 model Order {
@@ -247,6 +252,10 @@ model Order {
   history  OrderStatusHistory[]
 
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([orderStatus])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -261,6 +270,9 @@ model OrderItem {
   quantity Int
 
   price Float
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Payment {
@@ -342,7 +354,10 @@ model Review {
   isPublished Boolean @default(false)
 
   createdAt DateTime @default(now())
+
+  @@index([productId, isPublished])
 }
+
 
 model Wishlist {
   id String @id @default(cuid())

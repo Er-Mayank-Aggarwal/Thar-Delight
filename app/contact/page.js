@@ -69,9 +69,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-serif text-lg text-brand-brown font-semibold mb-1">Our Location</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    12, Desert Crafts Plaza,
-                    Opp. High Court, Jodhpur,
-                    Rajasthan, 342001
+                    D-15, Rameshwar Nagar, Jodhpur, Rajasthan
                   </p>
                 </div>
               </div>
@@ -95,7 +93,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-serif text-lg text-brand-brown font-semibold mb-1">Email</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    <a href="mailto:hello@thardelight.com" className="hover:text-brand-gold transition-colors">hello@thardelight.com</a>
+                    <a href="mailto:thardelight@gmail.com" className="hover:text-brand-gold transition-colors">thardelight@gmail.com</a>
                   </p>
                 </div>
               </div>

@@ -1,11 +1,22 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { newsletterSchema } from "@/lib/validations";
+import { newsletterLimiter } from "@/lib/rateLimit";
 
-export async function subscribeToNewsletter(email) {
+export async function subscribeToNewsletter(rawEmail) {
   try {
-    if (!email || !email.includes('@')) {
-      return { success: false, error: "Valid email is required" };
+    const parsed = newsletterSchema.safeParse({ email: rawEmail });
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.errors[0]?.message || "Valid email is required" };
+    }
+
+    const email = parsed.data.email.toLowerCase();
+
+    // Rate limiting check
+    const rl = newsletterLimiter.check(email);
+    if (!rl.allowed) {
+      return { success: false, error: "Too many subscription attempts. Please try again later." };
     }
 
     const existing = await prisma.newsletter.findUnique({
@@ -26,3 +37,4 @@ export async function subscribeToNewsletter(email) {
     return { success: false, error: "Subscription failed. Please try again." };
   }
 }
+

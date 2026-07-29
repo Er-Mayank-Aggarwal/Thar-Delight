@@ -57,12 +57,14 @@ export default function CartDrawer({ isOpen, onClose }) {
                 <p className="text-lg font-serif text-brand-brown mb-1">Your cart is empty</p>
                 <p className="text-sm text-gray-500">Looks like you haven't added anything yet.</p>
               </div>
-              <button 
+              <Link 
+                href="/shop"
                 onClick={onClose}
-                className="mt-4 px-6 py-2.5 bg-brand-brown text-white font-medium rounded-full hover:bg-brand-brown/90 transition-colors"
+                className="mt-4 px-8 py-3 bg-brand-gold hover:bg-brand-gold-dark text-white font-semibold text-sm rounded-full transition-all duration-300 shadow-md shadow-brand-gold/20 hover:-translate-y-0.5"
               >
-                Continue Shopping
-              </button>
+                Shop Now
+              </Link>
+
             </div>
           ) : (
             cart.map((item) => (
@@ -78,10 +80,11 @@ export default function CartDrawer({ isOpen, onClose }) {
                 </div>
                 
                 <div className="flex-1 flex flex-col justify-between py-1">
-                  <div>
-                    <h3 className="text-sm font-medium text-brand-brown line-clamp-1 pr-6">{item.name}</h3>
+                    <h3 className="text-sm font-medium text-brand-brown line-clamp-1 pr-6">
+                      {(item.name || "").split("|")[0].trim()}
+                    </h3>
                     <p className="text-sm font-bold text-brand-brown mt-1">₹{item.price}</p>
-                  </div>
+
                   
                   <div className="flex items-center gap-3">
                     <div className="flex items-center bg-brand-cream rounded-lg border border-brand-sand/40">

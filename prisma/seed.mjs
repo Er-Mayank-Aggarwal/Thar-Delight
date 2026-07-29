@@ -6,10 +6,15 @@ async function main() {
   console.log('Start seeding database...');
 
   console.log('Clearing existing data...');
+  await prisma.cartItem.deleteMany();
+  await prisma.wishlist.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.orderItem.deleteMany();
   await prisma.inventory.deleteMany();
   await prisma.productImage.deleteMany();
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
+
 
   console.log('Creating categories...');
   const uniqueCategories = [...new Set(products.map(p => p.category))];

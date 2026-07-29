@@ -1,54 +1,119 @@
 # Thar Delight 🍪✨
 
-Welcome to the **Thar Delight** e-commerce storefront! This is a modern, responsive Next.js application built to showcase and sell artisanal treats and handcrafted wooden serveware directly from the heart of the Thar Desert, Rajasthan.
+Welcome to **Thar Delight** — an artisanal e-commerce web application built with Next.js 16, Tailwind CSS, Prisma ORM, Neon PostgreSQL, and Better Auth. It showcases and sells wholesome millet treats, traditional farali cookies, and handcrafted wooden serveware directly from Rajasthan, India.
 
-## Features
+---
 
-- **Beautiful UI/UX**: Designed with a premium color palette (rich browns, golds, and warm sand tones) to reflect the organic, artisanal nature of the products.
-- **Fully Responsive**: Flawless experience across mobile, tablet, and desktop devices.
-- **Dynamic Animations**: Smooth scroll effects, hover states, and hero section orbit animations using pure Tailwind CSS.
-- **Custom Typography**: Elegant combination of Inter, Lora, and Dancing Script fonts.
-- **Next.js 15+ App Router**: Fast, SEO-friendly, and modern React architecture.
+## 🌟 Key Features
+
+- **Artisanal UI/UX**: Premium color palette (rich browns, golds, and warm sand tones) with dynamic animations and glassmorphic micro-interactions.
+- **Smart Sticky Navigation**: Auto-hiding header on scroll down, instant reveal on scroll up anywhere on the page.
+- **Live Database Integration**: Real-time product, review, category, order, and inventory management powered by PostgreSQL.
+- **Authentication**: Secure passwordless and Google OAuth login via Better Auth.
+- **Admin Dashboard**: Comprehensive order processing, product CRUD, coupon management, and review moderation.
+- **Performance & Security**: In-memory rate limiting, Zod input validation schemas, database indexes, and edge-level route proxying.
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router & Turbopack)
+- **Database**: [Neon PostgreSQL](https://neon.tech/) (Serverless DB with connection pooling)
+- **ORM**: [Prisma ORM](https://www.prisma.io/)
+- **Authentication**: [Better Auth](https://www.better-auth.com/) (Google OAuth & Email/Password)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Fonts**: Google Fonts (Inter, Lora, Dancing Script)
+- **Icons & Fonts**: Lucide React, Google Fonts (Inter, Lora, Dancing Script)
+- **Validation**: Zod & custom sliding-window rate limiters
+
+---
 
 ## 📦 Getting Started
 
-First, install the dependencies:
+### 1. Clone & Install Dependencies
 
 ```bash
+git clone https://github.com/Er-Mayank-Aggarwal/Thar-Delight-Frontend-.git
+cd thar-delight-app
 npm install
 ```
 
-Then, run the development server:
+### 2. Set Up Environment Variables
+
+Copy the `.env.example` file to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Fill in your connection details inside `.env`:
+
+```env
+DATABASE_URL="postgresql://username:password@ep-sample-host.aws.neon.tech/neondb?sslmode=require"
+BETTER_AUTH_SECRET="your-32-character-random-secret-key"
+BETTER_AUTH_URL="http://localhost:3000"
+GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+### 3. Database Setup & Seeding
+
+Generate the Prisma client and sync database schema:
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Push schema and indexes to PostgreSQL database
+npx prisma db push
+
+# Seed initial products & categories
+node prisma/seed.mjs
+```
+
+### 4. Grant Admin Privileges
+
+To grant an account ADMIN access to `/admin-controls`:
+
+```bash
+node set-admin.mjs your-email@gmail.com
+```
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
 
 ## 📂 Project Structure
 
-- `app/components/`: Reusable UI components (`Header`, `Footer`, `ProductCard`, etc.)
-- `app/data/`: Mock data for products and categories.
-- `app/shop/`: The main product catalog and filtering page.
-- `app/product/[slug]/`: Dynamic individual product detail pages.
-- `app/about/`: The brand's story and mission.
-- `public/images/`: Static image assets.
+```text
+thar-delight-app/
+├── app/
+│   ├── actions/          # Server Actions (orders, products, reviews, cart, coupons)
+│   ├── admin-controls/   # Protected Admin Panel (dashboard, inventory, orders)
+│   ├── api/              # Better Auth API endpoints
+│   ├── components/       # UI Components (Header, Footer, HeroSection, ProductCard)
+│   ├── shop/             # Product catalog with search and filters
+│   └── product/[slug]/   # Dynamic individual product page
+├── lib/
+│   ├── auth.js           # Better Auth server configuration
+│   ├── prisma.js         # Singleton Prisma DB client instance
+│   ├── rateLimit.js      # Sliding-window rate limiter
+│   └── validations.js    # Zod schemas for input validation
+├── prisma/
+│   ├── schema.prisma     # DB models & performance indexes
+│   └── seed.mjs          # Database seed script
+├── .env.example          # Environment variable template
+└── proxy.js              # Next.js 16 edge route protection middleware
+```
 
-## 🎨 Design System
-
-The app uses a custom Tailwind theme defined in `app/globals.css`:
-- `--color-brand-brown`: Deep primary brand color
-- `--color-brand-gold`: Accent and CTA color
-- `--color-brand-cream` / `--color-brand-sand`: Warm background hues
+---
 
 ## 📝 License
 
 © 2026 Thar Delight. All rights reserved.
+

@@ -34,10 +34,10 @@ export default function Footer() {
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
-    
+
     setStatus("loading");
     const res = await subscribeToNewsletter(email);
-    
+
     if (res.success) {
       window.alert(res.message || "Successfully subscribed to the newsletter!");
       setStatus("idle");
@@ -72,7 +72,7 @@ export default function Footer() {
                       className="flex-1 px-5 py-3 bg-white/10 border border-white/20 rounded-full sm:rounded-r-none text-white placeholder-white/40 focus:outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold transition-colors leading-normal w-full"
                     />
                   </div>
-                  <button 
+                  <button
                     type="submit"
                     disabled={status === "loading"}
                     className="px-6 py-3 bg-brand-gold border border-transparent hover:bg-brand-gold-dark text-white font-semibold rounded-full sm:rounded-l-none sm:rounded-r-full transition-all duration-300 hover:shadow-lg hover:shadow-brand-gold/20 flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50"
@@ -167,15 +167,15 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-white/50">
                 <MapPin size={16} className="mt-0.5 text-brand-gold flex-shrink-0" />
-                <span>Thar Desert Region, Rajasthan, India</span>
+                <span>D-15, Rameshwar Nagar, Jodhpur, Rajasthan, India</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-white/50">
                 <Phone size={16} className="text-brand-gold flex-shrink-0" />
-                <a href="tel:+919876543210" className="hover:text-brand-gold transition-colors">+91 98765 43210</a>
+                <a href="tel:+918955143139" className="hover:text-brand-gold transition-colors">+91 89551 43139</a>
               </li>
               <li className="flex items-center gap-3 text-sm text-white/50">
                 <Mail size={16} className="text-brand-gold flex-shrink-0" />
-                <a href="mailto:hello@thardelight.com" className="hover:text-brand-gold transition-colors">hello@thardelight.com</a>
+                <a href="mailto:thardelight@gmail.com" className="hover:text-brand-gold transition-colors">thardelight@gmail.com</a>
               </li>
             </ul>
           </div>

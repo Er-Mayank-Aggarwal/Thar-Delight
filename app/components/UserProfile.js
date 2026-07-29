@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { User, MapPin, Package, LogOut, Camera, Edit2, AlertCircle, Trash2, CheckCircle2, Plus, Download, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
-import { updateUserProfile, addAddress, deleteAddress, setDefaultAddress } from "@/app/actions/user-actions";
+import { updateUserProfile, updateUserAvatar, addAddress, deleteAddress, setDefaultAddress } from "@/app/actions/user-actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +17,7 @@ const INDIAN_STATES = [
   "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
   "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
 ];
+
 
 function OrderCard({ order }) {
   const [expanded, setExpanded] = useState(false);
@@ -128,6 +129,11 @@ export default function UserProfile({ user, orders, addresses }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const fileInputRef = useRef(null);
+  const [avatarUrl, setAvatarUrl] = useState(user.image || null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
   const [formData, setFormData] = useState({
     name: user.name || "",
     email: user.email || "",
@@ -150,6 +156,38 @@ export default function UserProfile({ user, orders, addresses }) {
   const [pincodeError, setPincodeError] = useState("");
 
   const router = useRouter();
+
+  const handleAvatarSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size exceeds 5MB. Please select a smaller image.");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Data = event.target?.result;
+      if (!base64Data) {
+        setIsUploadingAvatar(false);
+        return;
+      }
+
+      const res = await updateUserAvatar(base64Data);
+      if (res.success) {
+        setAvatarUrl(base64Data);
+        router.refresh();
+      } else {
+        setError(res.error);
+      }
+      setIsUploadingAvatar(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handlePincodeChange = async (e) => {
     const val = e.target.value.replace(/\D/g, '').slice(0, 6);
@@ -233,15 +271,57 @@ export default function UserProfile({ user, orders, addresses }) {
           <div className="w-full md:w-64 flex-shrink-0">
             <div className="bg-white rounded-3xl p-6 border border-brand-sand/60 shadow-sm">
               <div className="flex flex-col items-center mb-8">
-                <div className="relative w-24 h-24 bg-brand-cream rounded-full mb-4 flex items-center justify-center border-4 border-white shadow-md">
-                  <User size={40} className="text-brand-gold" />
-                  <button className="absolute bottom-0 right-0 p-1.5 bg-brand-brown text-white rounded-full hover:bg-brand-gold transition-colors">
-                    <Camera size={14} />
+                
+                {/* Hidden File Input for Avatar Upload */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarSelect}
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  className="hidden"
+                />
+
+                {/* Avatar & Floating Camera Badge */}
+                <div className="relative mb-4">
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative w-24 h-24 bg-brand-cream rounded-full flex items-center justify-center border-4 border-white shadow-md cursor-pointer overflow-hidden group transition-all"
+                  >
+                    {avatarUrl ? (
+                      <Image src={avatarUrl} alt={user.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                    ) : (
+                      <User size={40} className="text-brand-gold" />
+                    )}
+
+                    {/* Hover camera overlay */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity duration-200">
+                      <Camera size={20} />
+                      <span className="text-[9px] font-semibold mt-0.5 uppercase tracking-wider">Change</span>
+                    </div>
+
+                    {isUploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                        <div className="w-6 h-6 border-2 border-white border-t-brand-gold rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Clean Floating Camera Button Badge */}
+                  <button 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 p-2 bg-brand-brown hover:bg-brand-gold text-white rounded-full transition-all duration-300 shadow-lg border-2 border-white hover:scale-110"
+                    title="Upload Profile Picture"
+                  >
+                    <Camera size={13} />
                   </button>
                 </div>
+
+
                 <h2 className="font-serif text-xl font-bold text-brand-brown text-center">{user.name}</h2>
                 <p className="text-sm text-gray-500">{user.email}</p>
               </div>
+
 
               <nav className="space-y-2">
                 <button

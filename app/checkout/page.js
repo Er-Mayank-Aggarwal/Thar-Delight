@@ -14,8 +14,9 @@ export default async function CheckoutPage() {
   ]);
 
   if (!profile) {
-    redirect("/account");
+    redirect("/account?mode=register");
   }
 
   return <CheckoutClient initialProfile={profile} initialAddresses={addresses} />;
 }
+

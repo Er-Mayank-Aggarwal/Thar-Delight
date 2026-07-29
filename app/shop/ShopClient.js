@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import ProductCard from "../components/ProductCard";
 import { Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
@@ -74,7 +75,7 @@ export default function ShopClient({ initialProducts, categories }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Banner header */}
-        <div className="relative rounded-3xl overflow-hidden bg-brand-brown py-16 px-8 text-center mb-10 shadow-xl">
+        <div className="relative rounded-3xl overflow-hidden bg-brand-brown py-16 px-8 text-center mb-8 shadow-xl">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(195,154,95,0.15),transparent_70%)]" />
           <h1 className="font-serif text-4xl sm:text-5xl !text-white mb-4 relative z-10">
             Thar Delight Store
@@ -84,51 +85,56 @@ export default function ShopClient({ initialProducts, categories }) {
           </p>
         </div>
 
+        {/* 4 Circular Category Filter Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 max-w-4xl mx-auto mb-10">
+
+          {[
+            { name: "Millet Cookies", slug: "millet-cookies", image: "/images/categories/millet-cookies.jpg" },
+            { name: "Millet Snacks", slug: "millet-snacks", image: "/images/categories/snacks.jpg" },
+            { name: "Farali", slug: "farali", image: "/images/categories/farali-cookies.jpg" },
+            { name: "All", slug: "all", image: "/images/products/ajwain-millet-cookies.jpeg" },
+          ].map((cat) => {
+
+            const isSelected = selectedCategory === cat.slug;
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => handleCategorySelect(cat.slug)}
+                className={`group p-4 rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${
+                  isSelected
+                    ? "bg-white border-2 border-brand-gold shadow-md shadow-brand-gold/15 scale-[1.02]"
+                    : "bg-[#f5f3ef] hover:bg-white border border-brand-sand/50 hover:shadow-md hover:border-brand-gold/40"
+                }`}
+              >
+                <div className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-3 border-2 transition-all duration-300 ${
+                  isSelected ? "border-brand-gold ring-4 ring-brand-gold/20 scale-105" : "border-white shadow-sm group-hover:scale-105"
+                }`}>
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-cover"
+                    sizes="120px"
+                  />
+                </div>
+                <span className={`text-xs sm:text-sm font-bold tracking-wider uppercase text-center ${
+                  isSelected ? "text-brand-gold" : "text-brand-brown group-hover:text-brand-gold"
+                }`}>
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+
         <div className="grid lg:grid-cols-4 gap-8">
 
           {/* Sidebar Filters */}
           <div className="bg-white rounded-2xl p-6 border border-brand-sand/60 h-fit space-y-8">
-            <div>
-              <h3 className="font-serif text-lg text-brand-brown font-semibold mb-4 flex items-center gap-2 pb-2 border-b border-brand-sand">
-                <Filter size={18} className="text-brand-gold" />
-                Categories
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <button
-                    onClick={() => handleCategorySelect("all")}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${selectedCategory === "all"
-                      ? "bg-brand-gold text-white font-semibold"
-                      : "text-gray-500 hover:bg-brand-cream hover:text-brand-brown"
-                      }`}
-                  >
-                    All Categories ({initialProducts.length})
-                  </button>
-                </li>
-                {categories.map((cat) => {
-                  const productCount = initialProducts.filter(p => p.category?.slug === cat.slug).length;
-                  return (
-                  <li key={cat.id}>
-                    <button
-                      onClick={() => handleCategorySelect(cat.slug)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${selectedCategory === cat.slug
-                        ? "bg-brand-gold text-white font-semibold"
-                        : "text-gray-500 hover:bg-brand-cream hover:text-brand-brown"
-                        }`}
-                    >
-                      <span>{cat.name}</span>
-                      <span className={selectedCategory === cat.slug ? "text-white/80" : "text-gray-400 text-xs"}>
-                        ({productCount})
-                      </span>
-                    </button>
-                  </li>
-                  );
-                })}
-              </ul>
-            </div>
-
             {/* Filter by Price */}
             <div>
+
               <h3 className="font-serif text-lg text-brand-brown font-semibold mb-4 flex items-center gap-2 pb-2 border-b border-brand-sand">
                 <SlidersHorizontal size={18} className="text-brand-gold" />
                 Filter by Price

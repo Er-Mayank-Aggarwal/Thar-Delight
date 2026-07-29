@@ -8,7 +8,7 @@ import Image from "next/image";
 export default async function InvoicePage({ params }) {
   const { id } = await params;
   const session = await getSession();
-  
+
   if (!session?.userId) {
     redirect("/account");
   }
@@ -55,7 +55,7 @@ export default async function InvoicePage({ params }) {
 
       <div className="min-h-screen bg-gray-100 py-6 sm:py-10 print:bg-white print:py-0 print:min-h-0">
         <div className="invoice-page max-w-[720px] mx-auto bg-white p-6 sm:p-8 shadow-md print:shadow-none print:p-0">
-          
+
           {/* ── Header: Logo + Invoice Info ── */}
           <div className="flex items-start justify-between gap-4 pb-4 border-b-2 border-brand-brown mb-4">
             <div className="flex items-center gap-3">
@@ -69,10 +69,10 @@ export default async function InvoicePage({ params }) {
             <div className="text-right flex-shrink-0">
               <h1 className="text-2xl font-serif font-bold text-brand-brown tracking-wide">INVOICE</h1>
               <p className="text-[11px] text-gray-500 mt-1">
-                <span className="font-semibold text-brand-brown">#{order.id.slice(0,8).toUpperCase()}</span>
+                <span className="font-semibold text-brand-brown">#{order.id.slice(0, 8).toUpperCase()}</span>
               </p>
               <p className="text-[11px] text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata",  day: "2-digit", month: "short", year: "numeric" })}
+                {new Date(order.createdAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric" })}
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ export default async function InvoicePage({ params }) {
               <p><span className="font-semibold text-gray-600">Order Status:</span> {order.orderStatus}</p>
             </div>
             <div className="text-right">
-              <p>{settings?.supportEmail || "hello@thardelight.com"}</p>
+              <p>{settings?.supportEmail || "thardelight@gmail.com"}</p>
               <p>{settings?.supportPhone || "+91 98765 43210"}</p>
             </div>
           </div>

@@ -17,17 +17,38 @@ export async function getAllProducts() {
 }
 
 export async function getFeaturedProducts() {
-  return await prisma.product.findMany({
+  const featured = await prisma.product.findMany({
     where: {
       isFeatured: true
     },
+    take: 4,
     include: {
       inventory: true,
       images: { where: { isPrimary: true }, take: 1 },
+      category: true,
       reviews: { where: { isPublished: true }, select: { rating: true } },
     }
   });
+
+  if (featured.length < 4) {
+    const extra = await prisma.product.findMany({
+      where: {
+        id: { notIn: featured.map(p => p.id) }
+      },
+      take: 4 - featured.length,
+      include: {
+        inventory: true,
+        images: { where: { isPrimary: true }, take: 1 },
+        category: true,
+        reviews: { where: { isPublished: true }, select: { rating: true } },
+      }
+    });
+    return [...featured, ...extra];
+  }
+
+  return featured;
 }
+
 
 export async function getProductBySlug(slug) {
   return await prisma.product.findUnique({
@@ -165,27 +186,49 @@ export const getAllCategories = unstable_cache(
   { revalidate: 3600 }
 );
 
-export const getHeroProductRatings = unstable_cache(
-  async (slugs) => {
-    const products = await prisma.product.findMany({
-      where: { slug: { in: slugs } },
-      select: {
-        id: true,
-        slug: true,
-        inventory: true,
-        reviews: { where: { isPublished: true }, select: { rating: true } }
+export async function getCategoriesWithProductCount() {
+  const dbCategories = await prisma.category.findMany({
+    include: {
+      _count: {
+        select: { products: true }
       }
-    });
-    return products.map(p => ({
-      id: p.id,
-      slug: p.slug,
-      inventory: p.inventory,
-      count: p.reviews.length,
-      avg: p.reviews.length > 0
-        ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1)
-        : "0.0"
-    }));
-  },
-  ["hero-product-ratings"],
-  { revalidate: 300 }
-);
+    },
+    orderBy: { name: "asc" }
+  });
+  return dbCategories.map(c => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description || "",
+    productCount: c._count.products,
+  }));
+}
+
+
+
+export async function getHeroProductRatings(slugs) {
+  const products = await prisma.product.findMany({
+    where: { slug: { in: slugs } },
+    select: {
+      id: true,
+      slug: true,
+      price: true,
+      originalPrice: true,
+      inventory: true,
+      reviews: { where: { isPublished: true }, select: { rating: true } }
+    }
+  });
+  return products.map(p => ({
+    id: p.id,
+    slug: p.slug,
+    price: p.price ? Number(p.price.toString()) : 0,
+    originalPrice: p.originalPrice ? Number(p.originalPrice.toString()) : null,
+    inventory: p.inventory,
+    count: p.reviews.length,
+    avg: p.reviews.length > 0
+      ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1)
+      : "0.0"
+  }));
+}
+
+

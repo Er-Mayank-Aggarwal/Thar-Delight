@@ -8,8 +8,12 @@ import { products } from "../data/products";
 import { useCart } from "../context/CartContext";
 import { getProductBySlug, getHeroProductRatings } from "../actions/product-actions";
 
-// Select 6 products for the circular wheel
-const wheelProducts = products.slice(0, 6);
+// Select 6 products for the circular wheel (without fake rating fallbacks)
+const wheelProducts = products.slice(0, 6).map(p => ({
+  ...p,
+  rating: 0,
+  reviews: 0
+}));
 
 const bgGradients = [
   "#6e4b2d, #8a5e38, #6e4b2d", // Ajwain Cookies - Lighter rich brown
@@ -21,7 +25,7 @@ const bgGradients = [
 ];
 
 export default function HeroSection() {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [rotationStep, setRotationStep] = useState(0);
   const [radius, setRadius] = useState(400);
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
@@ -29,36 +33,55 @@ export default function HeroSection() {
 
   const [realProducts, setRealProducts] = useState(wheelProducts);
 
-  // Auto-rotate every 5 seconds
+  const activeIndex = realProducts.length > 0 
+    ? ((rotationStep % realProducts.length) + realProducts.length) % realProducts.length 
+    : 0;
+
+  // Auto-rotate forward continuously every 5 seconds without rewinding
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % realProducts.length);
+      setRotationStep((prev) => prev + 1);
     }, 5000);
     return () => clearInterval(timer);
-  }, [realProducts.length]);
+  }, []);
 
-  // Fetch real ratings on mount (single batched + cached call)
+
+  // Fetch real products & ratings from DB on mount
   useEffect(() => {
-    const fetchRatings = async () => {
+    const loadDbProducts = async () => {
       try {
-        const slugs = wheelProducts.map(p => p.slug);
+        const slugs = wheelProducts.map((p) => p.slug);
         const ratings = await getHeroProductRatings(slugs);
         const ratingMap = {};
-        ratings.forEach(r => { ratingMap[r.slug] = r; });
-        const updated = wheelProducts.map(p => {
+        ratings.forEach((r) => {
+          ratingMap[r.slug] = r;
+        });
+
+        const updated = wheelProducts.map((p) => {
           const r = ratingMap[p.slug];
           if (r) {
-            return { ...p, id: r.id, inventory: r.inventory, rating: r.count > 0 ? r.avg : 0, reviews: r.count };
+            return {
+              ...p,
+              id: r.id,
+              price: r.price ?? p.price,
+              originalPrice: r.originalPrice ?? p.originalPrice,
+              inventory: r.inventory,
+              rating: r.count > 0 ? r.avg : 0,
+              reviews: r.count,
+            };
           }
           return p;
         });
+
         setRealProducts(updated);
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load hero product DB data:", e);
       }
     };
-    fetchRatings();
+    loadDbProducts();
   }, []);
+
+
 
   // Update circle radius based on screen size
   useEffect(() => {
@@ -81,6 +104,14 @@ export default function HeroSection() {
   const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
   const baseAngle = radius < 400 ? 90 : 180;
 
+  const handleSelectProduct = (idx) => {
+    const total = realProducts.length || 1;
+    const currentMod = ((rotationStep % total) + total) % total;
+    let diff = idx - currentMod;
+    if (diff < 0) diff += total;
+    setRotationStep((prev) => prev + diff);
+  };
+
   const handleAddToCart = () => {
     // Wait until real product data is loaded, check stock
     if (!activeProduct.inventory || activeProduct.inventory.quantity <= 0) return;
@@ -89,6 +120,7 @@ export default function HeroSection() {
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
 
   return (
     <section 
@@ -123,35 +155,54 @@ export default function HeroSection() {
                 </span>
               </div>
 
-              {/* Title */}
-              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-white leading-tight overflow-hidden">
-                <span className="block text-white animate-fade-in-up duration-500">
-                  {activeProduct.name.split(" ").slice(0, -1).join(" ")}
-                </span>
-                <span className="block text-brand-gold font-bold animate-fade-in-up duration-700">
-                  {activeProduct.name.split(" ").slice(-1)[0]}
-                </span>
-              </h1>
+              {/* Title & Subtitle */}
+              {(() => {
+                const [heroMainTitle, heroSubTitle] = (activeProduct.name || "").split("|").map(s => s.trim());
+                return (
+                  <>
+                    <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white leading-tight overflow-hidden">
+                      <span className="block text-white font-serif font-bold animate-fade-in-up duration-500">
+                        {heroMainTitle}
+                      </span>
+                    </h1>
+                    {heroSubTitle && (
+                      <p className="text-brand-gold text-sm sm:text-base font-semibold tracking-wide animate-fade-in-up duration-600">
+                        {heroSubTitle}
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* Short description */}
               <p className="text-white/90 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 min-h-[72px] animate-fade-in-up duration-700">
                 {activeProduct.shortDescription}
               </p>
 
+
               {/* Price & Rating */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-2 animate-fade-in-up duration-800">
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-bold text-white tracking-tight">₹{activeProduct.price}</span>
-                  {activeProduct.originalPrice && (
+                  {activeProduct.originalPrice && Number(activeProduct.originalPrice) > Number(activeProduct.price) ? (
                     <span className="text-lg text-white/65 line-through">₹{activeProduct.originalPrice}</span>
-                  )}
+                  ) : null}
                 </div>
+
+
                 <div className="h-6 w-px bg-white/20" />
                 <div className="flex items-center gap-1.5">
-                  <Star size={16} className="text-amber-400 fill-amber-400" />
-                  <span className="text-white font-medium">{activeProduct.rating}</span>
-                  <span className="text-white/70 text-sm">({activeProduct.reviews} reviews)</span>
+                  <Star size={16} className={activeProduct.reviews > 0 ? "text-amber-400 fill-amber-400" : "text-white/40 fill-white/40"} />
+                  {activeProduct.reviews > 0 ? (
+                    <>
+                      <span className="text-white font-semibold">{activeProduct.rating}</span>
+                      <span className="text-white/70 text-sm">({activeProduct.reviews} {activeProduct.reviews === 1 ? "review" : "reviews"})</span>
+                    </>
+                  ) : (
+                    <span className="text-white/70 text-sm font-medium">No reviews</span>
+                  )}
                 </div>
+
               </div>
 
               {/* Action Buttons */}
@@ -231,7 +282,7 @@ export default function HeroSection() {
               style={{
                 width: `${radius * 2}px`,
                 height: `${radius * 2}px`,
-                transform: `rotate(-${activeIndex * 60}deg)`,
+                transform: `rotate(-${rotationStep * 60}deg)`,
                 right: radius < 400 ? "50%" : `-${radius}px`,
                 marginRight: radius < 400 ? `-${radius}px` : "0",
                 top: "50%",
@@ -249,12 +300,13 @@ export default function HeroSection() {
                     key={product.id}
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     style={{
-                      transform: `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg) rotate(${activeIndex * 60}deg)`,
+                      transform: `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg) rotate(${rotationStep * 60}deg)`,
                     }}
                   >
                     {/* Compact circular thumbnail selector */}
                     <button
-                      onClick={() => setActiveIndex(idx)}
+                      onClick={() => handleSelectProduct(idx)}
+
                       className={`relative flex items-center justify-center rounded-full overflow-hidden transition-all duration-700 focus:outline-none ${
                         isActive
                           ? "w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-brand-gold shadow-2xl scale-110"

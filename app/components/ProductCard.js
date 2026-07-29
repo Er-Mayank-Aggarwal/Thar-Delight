@@ -50,16 +50,21 @@ export default function ProductCard({ product }) {
     }
   };
 
-  const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const hasDiscount = Boolean(product.originalPrice && Number(product.originalPrice) > Number(product.price));
+  const discount = hasDiscount
+    ? Math.round(((Number(product.originalPrice) - Number(product.price)) / Number(product.originalPrice)) * 100)
     : null;
+
 
   const imageUrl = product.image || product.images?.[0]?.url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
 
-  const reviewCount = product.reviews?.length || product.reviewCount || 0;
-  const calculatedRating = product.reviews?.length > 0
+  const reviewCount = Array.isArray(product.reviews) ? product.reviews.length : (product.reviews || product.reviewCount || 0);
+  const calculatedRating = Array.isArray(product.reviews) && product.reviews.length > 0
     ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
-    : (product.rating || 5);
+    : (typeof product.rating === "number" ? product.rating : 0);
+
+
+  const [mainTitle, subTitle] = (product.name || "").split("|").map((s) => s.trim());
 
   return (
     <div 
@@ -70,7 +75,7 @@ export default function ProductCard({ product }) {
       <div className="relative aspect-square overflow-hidden bg-brand-cream">
         <Image
           src={imageUrl}
-          alt={product.name}
+          alt={mainTitle}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -82,7 +87,7 @@ export default function ProductCard({ product }) {
         {/* Badge */}
         {product.badge && (
           <span
-            className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full z-10 ${product.badge === "Sale"
+            className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full z-10 ${product.badge === "Sale" || product.badge === "Sale!"
               ? "bg-red-500 text-white"
               : product.badge === "New"
                 ? "bg-emerald-500 text-white"
@@ -139,7 +144,7 @@ export default function ProductCard({ product }) {
             <button
               onClick={handleAddToCart}
               className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 text-white text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-xl ${added ? "bg-emerald-500 hover:bg-emerald-600" : "bg-brand-gold hover:bg-brand-gold-dark"}`}
-              aria-label={`Add ${product.name} to cart`}
+              aria-label={`Add ${mainTitle} to cart`}
             >
               {added ? (
                 "Added!"
@@ -154,7 +159,7 @@ export default function ProductCard({ product }) {
           <Link
             href={`/product/${product.slug}`}
             className="flex-shrink-0 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-white/95 hover:bg-white text-brand-brown rounded-full transition-all duration-300 shadow-md hover:shadow-xl"
-            aria-label={`View ${product.name}`}
+            aria-label={`View ${mainTitle}`}
           >
             <Eye size={16} />
           </Link>
@@ -165,45 +170,62 @@ export default function ProductCard({ product }) {
       <div className="p-4 sm:p-5">
         {/* Rating */}
         <div className="flex items-center gap-1.5 mb-2">
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={12}
-                className={
-                  i < Math.floor(calculatedRating)
-                    ? "text-amber-400 fill-amber-400"
-                    : "text-gray-200 fill-gray-200"
-                }
-              />
-            ))}
-          </div>
-          <span className="text-[11px] font-medium text-gray-400">
-            ({reviewCount})
-          </span>
+          {reviewCount > 0 ? (
+            <>
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={12}
+                    className={
+                      i < Math.floor(calculatedRating)
+                        ? "text-amber-400 fill-amber-400"
+                        : "text-gray-200 fill-gray-200"
+                    }
+                  />
+                ))}
+              </div>
+              <span className="text-[11px] font-medium text-gray-400">
+                ({reviewCount})
+              </span>
+            </>
+          ) : (
+            <span className="text-[11px] font-medium text-gray-400">
+              No reviews yet
+            </span>
+          )}
         </div>
 
+
         {/* Title */}
-        <h3 className="font-serif text-lg text-brand-brown group-hover:text-brand-gold transition-colors duration-300 mb-1 line-clamp-1">
-          <Link href={`/product/${product.slug}`}>{product.name}</Link>
+        <h3 className="font-serif text-base sm:text-lg font-bold text-brand-brown group-hover:text-brand-gold transition-colors duration-300 line-clamp-1">
+          <Link href={`/product/${product.slug}`}>{mainTitle}</Link>
         </h3>
 
-        {/* Description */}
-        <p className="text-xs text-gray-400 line-clamp-2 mb-3 leading-relaxed">
-          {product.shortDescription}
-        </p>
+        {/* Subtitle / Light Description */}
+        {subTitle ? (
+          <p className="text-xs text-gray-500 font-medium line-clamp-1 mt-0.5 mb-3">
+            {subTitle}
+          </p>
+        ) : (
+          <p className="text-xs text-gray-400 line-clamp-2 mb-3 leading-relaxed">
+            {product.shortDescription}
+          </p>
+        )}
+
 
         {/* Price */}
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold text-brand-brown">
             ₹{product.price}
           </span>
-          {product.originalPrice && (
+          {hasDiscount && (
             <span className="text-sm text-gray-400 line-through">
               ₹{product.originalPrice}
             </span>
           )}
         </div>
+
       </div>
     </div>
   );

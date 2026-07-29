@@ -1,11 +1,31 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { categories } from "../data/categories";
+import { getCategoriesWithProductCount } from "@/app/actions/product-actions";
 
-export default function CategoryShowcase() {
+const categoryStyleMap = {
+  "millet-cookies": { color: "from-amber-700 to-amber-900", image: "/images/categories/millet-cookies.jpg" },
+  "millet-snacks": { color: "from-yellow-600 to-yellow-800", image: "/images/categories/snacks.jpg" },
+  "farali": { color: "from-orange-600 to-orange-800", image: "/images/categories/farali-cookies.jpg" },
+  "wooden-craft": { color: "from-stone-600 to-stone-800", image: "/images/categories/wooden-craft.jpg" },
+};
+
+
+export default async function CategoryShowcase() {
+  const dbCategories = await getCategoriesWithProductCount();
+
+  const categories = dbCategories.map((c) => {
+    const style = categoryStyleMap[c.slug] || {
+      color: "from-amber-700 to-amber-900",
+      image: "/images/categories/millet-cookies.jpg",
+    };
+    return {
+      ...c,
+      color: style.color,
+      image: style.image,
+    };
+  });
+
   return (
     <section className="py-20 sm:py-24 bg-brand-warm-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,7 +45,8 @@ export default function CategoryShowcase() {
         </div>
 
         {/* Category Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 stagger-children">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto gap-6 stagger-children">
+
           {categories.map((category) => (
             <Link
               key={category.id}
@@ -82,3 +103,4 @@ export default function CategoryShowcase() {
     </section>
   );
 }
+

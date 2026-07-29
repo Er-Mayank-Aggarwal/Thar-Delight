@@ -5,7 +5,9 @@ import { getSession } from "@/lib/auth";
 import { placeOrderSchema } from "@/lib/validations";
 import { checkoutLimiter } from "@/lib/rateLimit";
 import { validateCoupon } from "./coupon-validate-actions";
+import { getStoreSettings } from "./store-actions";
 import { revalidatePath } from "next/cache";
+
 
 export async function placeOrder(formData) {
   try {
@@ -73,9 +75,16 @@ export async function placeOrder(formData) {
       }
     }
 
-    const tax = (subtotal - discount) * 0.18; // 18% GST on discounted subtotal
-    const deliveryCharge = (subtotal - discount) > 500 ? 0 : 50;
-    const total = subtotal - discount + tax + deliveryCharge;
+    // Fetch dynamic store settings for delivery rules
+    const settings = await getStoreSettings();
+    const freeDeliveryThreshold = settings?.freeDeliveryAbove ?? 500;
+    const baseDeliveryCharge = settings?.deliveryCharge ?? 50;
+
+    const discountedSubtotal = subtotal - discount;
+    const tax = discountedSubtotal * 0.18; // 18% GST on discounted subtotal
+    const deliveryCharge = discountedSubtotal > freeDeliveryThreshold ? 0 : baseDeliveryCharge;
+    const total = discountedSubtotal + tax + deliveryCharge;
+
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
 

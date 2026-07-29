@@ -19,9 +19,21 @@ export default async function FeaturedProducts() {
               Featured Products
             </h2>
           </div>
+        </div>
+
+        {/* Product Carousel / Grid */}
+        <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory sm:snap-none justify-start sm:justify-center gap-4 sm:gap-8 pb-4 sm:pb-0 custom-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          {featured.map((product) => (
+            <div key={product.id} className="flex-shrink-0 w-[80vw] max-w-[280px] sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)] snap-start">
+              <ProductCard product={product} />
+            </div>
+          ))}
+        </div>
+        {/* View All Products Button */}
+        <div className="flex justify-center mt-12 sm:mt-14">
           <Link
             href="/shop"
-            className="group flex items-center gap-2 text-brand-gold hover:text-brand-gold-dark font-semibold transition-colors mt-6"
+            className="group inline-flex items-center gap-2.5 px-8 py-3.5 bg-brand-gold hover:bg-brand-gold-dark text-white text-sm font-semibold rounded-full shadow-md shadow-brand-gold/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
           >
             View All Products
             <ArrowRight
@@ -30,16 +42,8 @@ export default async function FeaturedProducts() {
             />
           </Link>
         </div>
-
-        {/* Product Grid */}
-        <div className="flex flex-wrap justify-center gap-8 stagger-children">
-          {featured.map((product) => (
-            <div key={product.id} className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)]">
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
       </div>
     </section>
+
   );
 }

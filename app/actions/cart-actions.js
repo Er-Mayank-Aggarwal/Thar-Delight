@@ -2,11 +2,13 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { syncCartSchema } from "@/lib/validations";
 
 async function getUserId() {
   const session = await getSession();
   return session?.userId || null;
 }
+
 
 export async function getDbCart() {
   const userId = await getUserId();
@@ -142,22 +144,48 @@ export async function syncClientCartToDb(clientCartItems) {
   const userId = await getUserId();
   if (!userId) return { success: false, error: "Not logged in" };
 
+  if (!Array.isArray(clientCartItems) || clientCartItems.length === 0) {
+    let cart = await prisma.cart.findUnique({ where: { userId } });
+    if (cart) {
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    }
+    return { success: true };
+  }
+
+  const parsed = syncCartSchema.safeParse(clientCartItems);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid cart data format" };
+  }
+
+  const validItems = parsed.data;
+  const productIds = validItems.map((i) => i.id);
+
+  // Fetch valid existing product IDs from DB
+  const existingProducts = await prisma.product.findMany({
+    where: { id: { in: productIds }, isActive: true },
+    select: { id: true },
+  });
+  const validProductSet = new Set(existingProducts.map((p) => p.id));
+
+  const itemsToInsert = validItems.filter((item) => validProductSet.has(item.id));
+
   let cart = await prisma.cart.findUnique({ where: { userId } });
   if (!cart) {
     cart = await prisma.cart.create({ data: { userId } });
   }
 
   await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-  
-  if (clientCartItems && clientCartItems.length > 0) {
+
+  if (itemsToInsert.length > 0) {
     await prisma.cartItem.createMany({
-      data: clientCartItems.map(item => ({
+      data: itemsToInsert.map((item) => ({
         cartId: cart.id,
         productId: item.id,
-        quantity: item.quantity
-      }))
+        quantity: item.quantity,
+      })),
     });
   }
 
   return { success: true };
 }
+
