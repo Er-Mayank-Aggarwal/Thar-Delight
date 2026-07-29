@@ -1,4 +1,6 @@
+import 'dotenv/config';
 import { prisma } from '../lib/prisma.js';
+
 import { products } from '../app/data/products.js';
 import { inventory } from '../app/data/dummy-inventory.js';
 
@@ -42,7 +44,9 @@ async function main() {
         slug: productData.slug,
         description: productData.shortDescription,
         price: productData.price,
+        originalPrice: productData.originalPrice || null,
         sku: `SKU-${productData.slug}-${Math.floor(Math.random() * 1000)}`,
+
         isActive: productData.inStock,
         isFeatured: isFeatured,
         categoryId: categoryMap[productData.category],

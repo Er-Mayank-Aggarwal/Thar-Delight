@@ -10101,11 +10101,13 @@ export namespace Prisma {
 
   export type ProductAvgAggregateOutputType = {
     price: number | null
+    originalPrice: number | null
     weight: number | null
   }
 
   export type ProductSumAggregateOutputType = {
     price: number | null
+    originalPrice: number | null
     weight: number | null
   }
 
@@ -10115,6 +10117,7 @@ export namespace Prisma {
     slug: string | null
     description: string | null
     price: number | null
+    originalPrice: number | null
     weight: number | null
     sku: string | null
     isActive: boolean | null
@@ -10132,6 +10135,7 @@ export namespace Prisma {
     slug: string | null
     description: string | null
     price: number | null
+    originalPrice: number | null
     weight: number | null
     sku: string | null
     isActive: boolean | null
@@ -10149,6 +10153,7 @@ export namespace Prisma {
     slug: number
     description: number
     price: number
+    originalPrice: number
     weight: number
     sku: number
     isActive: number
@@ -10164,11 +10169,13 @@ export namespace Prisma {
 
   export type ProductAvgAggregateInputType = {
     price?: true
+    originalPrice?: true
     weight?: true
   }
 
   export type ProductSumAggregateInputType = {
     price?: true
+    originalPrice?: true
     weight?: true
   }
 
@@ -10178,6 +10185,7 @@ export namespace Prisma {
     slug?: true
     description?: true
     price?: true
+    originalPrice?: true
     weight?: true
     sku?: true
     isActive?: true
@@ -10195,6 +10203,7 @@ export namespace Prisma {
     slug?: true
     description?: true
     price?: true
+    originalPrice?: true
     weight?: true
     sku?: true
     isActive?: true
@@ -10212,6 +10221,7 @@ export namespace Prisma {
     slug?: true
     description?: true
     price?: true
+    originalPrice?: true
     weight?: true
     sku?: true
     isActive?: true
@@ -10316,6 +10326,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice: number | null
     weight: number | null
     sku: string
     isActive: boolean
@@ -10352,6 +10363,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     price?: boolean
+    originalPrice?: boolean
     weight?: boolean
     sku?: boolean
     isActive?: boolean
@@ -10377,6 +10389,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     price?: boolean
+    originalPrice?: boolean
     weight?: boolean
     sku?: boolean
     isActive?: boolean
@@ -10395,6 +10408,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     price?: boolean
+    originalPrice?: boolean
     weight?: boolean
     sku?: boolean
     isActive?: boolean
@@ -10413,6 +10427,7 @@ export namespace Prisma {
     slug?: boolean
     description?: boolean
     price?: boolean
+    originalPrice?: boolean
     weight?: boolean
     sku?: boolean
     isActive?: boolean
@@ -10424,7 +10439,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "weight" | "sku" | "isActive" | "isFeatured" | "seoTitle" | "seoDescription" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "description" | "price" | "originalPrice" | "weight" | "sku" | "isActive" | "isFeatured" | "seoTitle" | "seoDescription" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     category?: boolean | CategoryDefaultArgs<ExtArgs>
     images?: boolean | Product$imagesArgs<ExtArgs>
@@ -10459,6 +10474,7 @@ export namespace Prisma {
       slug: string
       description: string
       price: number
+      originalPrice: number | null
       weight: number | null
       sku: string
       isActive: boolean
@@ -10903,6 +10919,7 @@ export namespace Prisma {
     readonly slug: FieldRef<"Product", 'String'>
     readonly description: FieldRef<"Product", 'String'>
     readonly price: FieldRef<"Product", 'Float'>
+    readonly originalPrice: FieldRef<"Product", 'Float'>
     readonly weight: FieldRef<"Product", 'Int'>
     readonly sku: FieldRef<"Product", 'String'>
     readonly isActive: FieldRef<"Product", 'Boolean'>
@@ -29077,6 +29094,7 @@ export namespace Prisma {
     slug: 'slug',
     description: 'description',
     price: 'price',
+    originalPrice: 'originalPrice',
     weight: 'weight',
     sku: 'sku',
     isActive: 'isActive',
@@ -29931,6 +29949,7 @@ export namespace Prisma {
     slug?: StringFilter<"Product"> | string
     description?: StringFilter<"Product"> | string
     price?: FloatFilter<"Product"> | number
+    originalPrice?: FloatNullableFilter<"Product"> | number | null
     weight?: IntNullableFilter<"Product"> | number | null
     sku?: StringFilter<"Product"> | string
     isActive?: BoolFilter<"Product"> | boolean
@@ -29955,6 +29974,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     price?: SortOrder
+    originalPrice?: SortOrderInput | SortOrder
     weight?: SortOrderInput | SortOrder
     sku?: SortOrder
     isActive?: SortOrder
@@ -29983,6 +30003,7 @@ export namespace Prisma {
     name?: StringFilter<"Product"> | string
     description?: StringFilter<"Product"> | string
     price?: FloatFilter<"Product"> | number
+    originalPrice?: FloatNullableFilter<"Product"> | number | null
     weight?: IntNullableFilter<"Product"> | number | null
     isActive?: BoolFilter<"Product"> | boolean
     isFeatured?: BoolFilter<"Product"> | boolean
@@ -30006,6 +30027,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     price?: SortOrder
+    originalPrice?: SortOrderInput | SortOrder
     weight?: SortOrderInput | SortOrder
     sku?: SortOrder
     isActive?: SortOrder
@@ -30031,6 +30053,7 @@ export namespace Prisma {
     slug?: StringWithAggregatesFilter<"Product"> | string
     description?: StringWithAggregatesFilter<"Product"> | string
     price?: FloatWithAggregatesFilter<"Product"> | number
+    originalPrice?: FloatNullableWithAggregatesFilter<"Product"> | number | null
     weight?: IntNullableWithAggregatesFilter<"Product"> | number | null
     sku?: StringWithAggregatesFilter<"Product"> | string
     isActive?: BoolWithAggregatesFilter<"Product"> | boolean
@@ -31625,6 +31648,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -31648,6 +31672,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -31671,6 +31696,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -31694,6 +31720,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -31717,6 +31744,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -31734,6 +31762,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -31750,6 +31779,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -33275,6 +33305,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -33332,6 +33373,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     price?: SortOrder
+    originalPrice?: SortOrder
     weight?: SortOrder
     sku?: SortOrder
     isActive?: SortOrder
@@ -33345,6 +33387,7 @@ export namespace Prisma {
 
   export type ProductAvgOrderByAggregateInput = {
     price?: SortOrder
+    originalPrice?: SortOrder
     weight?: SortOrder
   }
 
@@ -33354,6 +33397,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     price?: SortOrder
+    originalPrice?: SortOrder
     weight?: SortOrder
     sku?: SortOrder
     isActive?: SortOrder
@@ -33371,6 +33415,7 @@ export namespace Prisma {
     slug?: SortOrder
     description?: SortOrder
     price?: SortOrder
+    originalPrice?: SortOrder
     weight?: SortOrder
     sku?: SortOrder
     isActive?: SortOrder
@@ -33384,6 +33429,7 @@ export namespace Prisma {
 
   export type ProductSumOrderByAggregateInput = {
     price?: SortOrder
+    originalPrice?: SortOrder
     weight?: SortOrder
   }
 
@@ -33401,6 +33447,22 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -33818,17 +33880,6 @@ export namespace Prisma {
     not?: NestedEnumDiscountTypeFilter<$PrismaModel> | $Enums.DiscountType
   }
 
-  export type FloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type CouponCountOrderByAggregateInput = {
     id?: SortOrder
     code?: SortOrder
@@ -33892,22 +33943,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDiscountTypeFilter<$PrismaModel>
     _max?: NestedEnumDiscountTypeFilter<$PrismaModel>
-  }
-
-  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type ReviewCountOrderByAggregateInput = {
@@ -34642,6 +34677,14 @@ export namespace Prisma {
     divide?: number
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
@@ -35196,14 +35239,6 @@ export namespace Prisma {
     set?: $Enums.DiscountType
   }
 
-  export type NullableFloatFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type UserCreateNestedOneWithoutReviewsInput = {
     create?: XOR<UserCreateWithoutReviewsInput, UserUncheckedCreateWithoutReviewsInput>
     connectOrCreate?: UserCreateOrConnectWithoutReviewsInput
@@ -35435,6 +35470,17 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>
@@ -35451,6 +35497,22 @@ export namespace Prisma {
     _max?: NestedFloatFilter<$PrismaModel>
   }
 
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
+  }
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -35465,17 +35527,6 @@ export namespace Prisma {
     _sum?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedIntNullableFilter<$PrismaModel>
     _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
@@ -35543,22 +35594,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumDiscountTypeFilter<$PrismaModel>
     _max?: NestedEnumDiscountTypeFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedFloatNullableFilter<$PrismaModel>
-    _min?: NestedFloatNullableFilter<$PrismaModel>
-    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type AddressCreateWithoutUserInput = {
@@ -36364,6 +36399,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36386,6 +36422,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36437,6 +36474,7 @@ export namespace Prisma {
     slug?: StringFilter<"Product"> | string
     description?: StringFilter<"Product"> | string
     price?: FloatFilter<"Product"> | number
+    originalPrice?: FloatNullableFilter<"Product"> | number | null
     weight?: IntNullableFilter<"Product"> | number | null
     sku?: StringFilter<"Product"> | string
     isActive?: BoolFilter<"Product"> | boolean
@@ -36781,6 +36819,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36803,6 +36842,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36841,6 +36881,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -36863,6 +36904,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -36885,6 +36927,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36907,6 +36950,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -36945,6 +36989,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -36967,6 +37012,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -37146,6 +37192,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -37168,6 +37215,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -37229,6 +37277,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -37251,6 +37300,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -37684,6 +37734,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -37706,6 +37757,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -37789,6 +37841,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -37811,6 +37864,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38132,6 +38186,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -38154,6 +38209,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -38245,6 +38301,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38267,6 +38324,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38336,6 +38394,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -38358,6 +38417,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -38449,6 +38509,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38471,6 +38532,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38839,6 +38901,7 @@ export namespace Prisma {
     slug: string
     description: string
     price: number
+    originalPrice?: number | null
     weight?: number | null
     sku: string
     isActive?: boolean
@@ -38855,6 +38918,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38877,6 +38941,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
@@ -38899,6 +38964,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     price?: FloatFieldUpdateOperationsInput | number
+    originalPrice?: NullableFloatFieldUpdateOperationsInput | number | null
     weight?: NullableIntFieldUpdateOperationsInput | number | null
     sku?: StringFieldUpdateOperationsInput | string
     isActive?: BoolFieldUpdateOperationsInput | boolean

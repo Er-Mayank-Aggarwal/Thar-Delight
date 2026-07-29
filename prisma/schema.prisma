@@ -146,9 +146,11 @@ model Product {
 
   description String
 
-  price Float
+  price         Float
+  originalPrice Float?
 
   weight Int?
+
 
   sku String @unique
 
