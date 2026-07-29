@@ -127,12 +127,26 @@ export default function ProductCard({ product }) {
               </button>
               <span className="text-xs sm:text-sm w-4 text-center">{cartItem.quantity}</span>
               <button
-                onClick={(e) => handleUpdateQuantity(e, 1)}
-                className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center bg-brand-cream hover:bg-brand-sand/30 rounded-full transition-colors"
+                onClick={(e) => {
+                  const maxStock = product.inventory?.quantity ?? product.stock ?? product.currentStock ?? 999;
+                  if (cartItem.quantity < maxStock) {
+                    handleUpdateQuantity(e, 1);
+                  } else {
+                    e.stopPropagation();
+                  }
+                }}
+                disabled={cartItem.quantity >= (product.inventory?.quantity ?? product.stock ?? product.currentStock ?? 999)}
+                className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full transition-colors ${
+                  cartItem.quantity >= (product.inventory?.quantity ?? product.stock ?? product.currentStock ?? 999)
+                    ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                    : "bg-brand-cream hover:bg-brand-sand/30 text-brand-brown"
+                }`}
+                title={cartItem.quantity >= (product.inventory?.quantity ?? product.stock ?? product.currentStock ?? 999) ? "Max stock reached" : "Increase quantity"}
               >
                 +
               </button>
             </div>
+
           ) : isOutOfStock ? (
             <button
               disabled

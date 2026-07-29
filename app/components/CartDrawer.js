@@ -97,13 +97,24 @@ export default function CartDrawer({ isOpen, onClose }) {
                       <span className="w-8 text-center text-sm font-medium text-brand-brown">
                         {item.quantity}
                       </span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-1.5 text-brand-brown hover:text-brand-gold transition-colors"
-                      >
-                        <Plus size={14} />
-                      </button>
+                      {(() => {
+                        const maxStock = item.inventory?.quantity ?? item.stock ?? item.quantityInStock ?? 999;
+                        const isMax = item.quantity >= maxStock;
+                        return (
+                          <button 
+                            onClick={() => !isMax && updateQuantity(item.id, item.quantity + 1)}
+                            disabled={isMax}
+                            className={`p-1.5 transition-colors ${
+                              isMax ? "text-gray-300 cursor-not-allowed" : "text-brand-brown hover:text-brand-gold"
+                            }`}
+                            title={isMax ? `Max stock (${maxStock}) reached` : "Increase quantity"}
+                          >
+                            <Plus size={14} />
+                          </button>
+                        );
+                      })()}
                     </div>
+
                   </div>
                 </div>
 

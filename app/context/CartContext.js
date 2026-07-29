@@ -34,11 +34,20 @@ export function CartProvider({ children }) {
   }, []);
 
   const addToCart = (product, quantity = 1) => {
+    const existingItem = cart.find((item) => item.id === product.id);
+    const currentQty = existingItem ? existingItem.quantity : 0;
+    const maxStock = product.inventory?.quantity ?? product.stock ?? product.quantityInStock ?? 999;
+
+    if (currentQty + quantity > maxStock) {
+      alert(`Cannot add more. Only ${maxStock} units available in stock.`);
+      return;
+    }
+
     const previousCart = [...cart];
     // Optimistic update
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
-      if (existingItem) {
+      const existing = prevCart.find((item) => item.id === product.id);
+      if (existing) {
         return prevCart.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
@@ -73,6 +82,14 @@ export function CartProvider({ children }) {
   const updateQuantity = (productId, quantity) => {
     if (quantity < 1) return removeFromCart(productId);
 
+    const item = cart.find((i) => i.id === productId);
+    const maxStock = item?.inventory?.quantity ?? item?.stock ?? item?.quantityInStock ?? 999;
+
+    if (quantity > maxStock) {
+      alert(`Cannot exceed available stock of ${maxStock} units.`);
+      return;
+    }
+
     const previousCart = [...cart];
     setCart((prevCart) =>
       prevCart.map((item) => (item.id === productId ? { ...item, quantity } : item))
@@ -91,6 +108,7 @@ export function CartProvider({ children }) {
         alert("Failed to update quantity");
       });
   };
+
 
   const clearCart = () => {
     const previousCart = [...cart];

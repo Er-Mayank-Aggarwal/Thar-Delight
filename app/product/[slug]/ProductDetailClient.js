@@ -184,14 +184,23 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        updateQuantity(product.id, cartItem.quantity + 1);
+                        if (cartItem.quantity < availableStock) {
+                          updateQuantity(product.id, cartItem.quantity + 1);
+                        }
                       }}
-                      className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-brand-cream hover:bg-brand-gold hover:text-white rounded-full transition-colors text-lg sm:text-xl font-bold"
+                      disabled={cartItem.quantity >= availableStock}
+                      className={`w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-colors text-lg sm:text-xl font-bold ${
+                        cartItem.quantity >= availableStock
+                          ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                          : "bg-brand-cream hover:bg-brand-gold hover:text-white text-brand-brown"
+                      }`}
                       aria-label="Increase quantity"
+                      title={cartItem.quantity >= availableStock ? `Max available stock (${availableStock}) reached` : "Increase quantity"}
                     >
                       +
                     </button>
                   </div>
+
                 ) : (
                   <button
                     onClick={() => {
