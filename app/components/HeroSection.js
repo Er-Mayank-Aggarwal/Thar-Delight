@@ -282,14 +282,13 @@ export default function HeroSection({ initialProducts = [] }) {
                     {/* Compact circular thumbnail selector */}
                     <button
                       onClick={() => handleSelectProduct(idx)}
-
                       className={`relative flex items-center justify-center rounded-full overflow-hidden transition-all duration-700 focus:outline-none ${
                         isActive
-                          ? "w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-brand-gold shadow-2xl scale-110"
+                          ? "w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 border-4 border-brand-gold shadow-[0_0_30px_rgba(195,154,95,0.8)] scale-110 z-30"
                           : "w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 border-2 border-white/60 hover:border-brand-gold opacity-75 hover:opacity-100 hover:scale-105 bg-brand-brown-light"
                       }`}
                       style={{
-                        boxShadow: isActive ? "0 0 25px rgba(195, 154, 95, 0.5)" : "0 4px 10px rgba(0,0,0,0.3)"
+                        boxShadow: isActive ? "0 0 30px rgba(195, 154, 95, 0.8)" : "0 4px 10px rgba(0,0,0,0.3)"
                       }}
                       aria-label={`Select ${product.name}`}
                     >
@@ -300,10 +299,6 @@ export default function HeroSection({ initialProducts = [] }) {
                         className="object-cover"
                         sizes="100px"
                       />
-                      {/* Active indicator ping */}
-                      {isActive && (
-                        <div className="absolute inset-0 border-2 border-white/40 rounded-full animate-ping pointer-events-none" />
-                      )}
                     </button>
 
                     {/* Small product title tooltips visible for inactive items */}
@@ -316,48 +311,6 @@ export default function HeroSection({ initialProducts = [] }) {
                 );
               })}
             </div>
-
-            {/* 3. Glowing Active Ring Overlay Frame at the active peak position (fixed, does not rotate) */}
-            <div
-              className="absolute border-[4px] border-brand-gold rounded-full pointer-events-none z-30 animate-pulse"
-              style={
-                radius < 400
-                  ? {
-                      width: `${thumbSize + 16}px`,
-                      height: `${thumbSize + 16}px`,
-                      left: "50%",
-                      top: "50%",
-                      transform: `translate(-50%, calc(-50% + ${radius}px))`,
-                      boxShadow: "0 0 25px rgba(195, 154, 95, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3)",
-                    }
-                  : {
-                      width: `${thumbSize + 16}px`,
-                      height: `${thumbSize + 16}px`,
-                      right: `${radius - (thumbSize + 16) / 2}px`,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      boxShadow: "0 0 25px rgba(195, 154, 95, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3)",
-                    }
-              }
-            />
-
-            {/* Glowing Spotlight Overlay directly behind the active product selector */}
-            <div
-              className="absolute w-40 sm:w-56 h-40 sm:h-56 rounded-full bg-brand-gold/30 blur-3xl pointer-events-none z-0"
-              style={
-                radius < 400
-                  ? {
-                      left: "50%",
-                      top: "50%",
-                      transform: `translate(-50%, calc(-50% + ${radius}px))`,
-                    }
-                  : {
-                      right: `${radius}px`,
-                      top: "50%",
-                      transform: "translate(50%, -50%)",
-                    }
-              }
-            />
 
             {/* Glowing Accent Ring tracing the outer edge of the half circle */}
             <div
