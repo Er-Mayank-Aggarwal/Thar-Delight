@@ -251,6 +251,7 @@ export async function getHeroProducts(limit = 6) {
     include: {
       images: { where: { isPrimary: true }, take: 1 },
       inventory: true,
+      category: true,
       reviews: { where: { isPublished: true }, select: { rating: true } },
     },
     orderBy: [
@@ -272,6 +273,7 @@ export async function getHeroProducts(limit = 6) {
       price: p.price ? Number(p.price.toString()) : 0,
       originalPrice: p.originalPrice ? Number(p.originalPrice.toString()) : null,
       shortDescription: p.description || "",
+      category: p.category?.slug || p.category?.name || "millet-cookies",
       image: p.images[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg",
       rating: parseFloat(avgRating),
       reviews: reviewCount,

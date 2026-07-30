@@ -120,7 +120,7 @@ export default function HeroSection() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/10 border border-brand-gold/20 animate-fade-in-up duration-500">
                 <Leaf size={14} className="text-brand-gold animate-spin-slow" />
                 <span className="text-brand-gold text-xs font-semibold uppercase tracking-wider">
-                  {activeProduct.category.replace("-", " ")}
+                  {(activeProduct?.category || "millet-cookies").toString().replace("-", " ")}
                 </span>
               </div>
 
