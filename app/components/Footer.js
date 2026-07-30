@@ -8,13 +8,12 @@ import { subscribeToNewsletter } from "../actions/newsletter-actions";
 const footerLinks = {
   shop: [
     { name: "Millet Cookies", href: "/shop?category=millet-cookies" },
-    { name: "Farali Cookies", href: "/shop?category=farali-cookies" },
-    { name: "Healthy Snacks", href: "/shop?category=snacks" },
-    { name: "Wooden Craft", href: "/shop?category=wooden-craft" },
+    { name: "Millet Snacks", href: "/shop?category=millet-snacks" },
+    { name: "Farali Cookies", href: "/shop?category=farali" },
+
   ],
   company: [
     { name: "About Us", href: "/about" },
-    { name: "Blog", href: "/blog" },
     { name: "FAQ", href: "/faq" },
     { name: "Contact", href: "/contact" },
   ],
