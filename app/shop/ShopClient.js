@@ -89,10 +89,10 @@ export default function ShopClient({ initialProducts, categories }) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 max-w-4xl mx-auto mb-10">
 
           {[
-            { name: "Millet Cookies", slug: "millet-cookies", image: "/images/categories/millet-cookies.jpg" },
-            { name: "Millet Snacks", slug: "millet-snacks", image: "/images/categories/snacks.jpg" },
-            { name: "Farali", slug: "farali", image: "/images/categories/farali-cookies.jpg" },
-            { name: "All", slug: "all", image: "/images/products/ajwain-millet-cookies.jpeg" },
+            { name: "Millet Cookies", slug: "millet-cookies", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395004/thar-delight/categories/millet-cookies.jpg" },
+            { name: "Millet Snacks", slug: "millet-snacks", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395005/thar-delight/categories/snacks.jpg" },
+            { name: "Farali", slug: "farali", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395006/thar-delight/categories/farali-cookies.jpg" },
+            { name: "All", slug: "all", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395008/thar-delight/products/ajwain-millet-cookies.jpg" },
           ].map((cat) => {
 
             const isSelected = selectedCategory === cat.slug;

@@ -59,7 +59,7 @@ export default async function InvoicePage({ params }) {
           {/* ── Header: Logo + Invoice Info ── */}
           <div className="flex items-start justify-between gap-4 pb-4 border-b-2 border-brand-brown mb-4">
             <div className="flex items-center gap-3">
-              <Image src="/images/logo.png" alt="Thar Delight" width={56} height={56} className="object-contain" />
+              <Image src="https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395001/thar-delight/logo.png" alt="Thar Delight" width={56} height={56} className="object-contain" />
               <div>
                 <h2 className="font-serif text-lg font-bold text-brand-brown leading-tight">{settings?.businessName || "Thar Delight"}</h2>
                 <p className="text-[11px] text-gray-500 leading-tight mt-0.5">{settings?.address || "12, Desert Crafts Plaza, Jodhpur, Rajasthan 342001"}</p>

@@ -11,12 +11,14 @@ import { useCart } from "../../context/CartContext";
 export default function ProductDetailClient({ product, relatedProducts, recommendedProducts }) {
   const { cart, addToCart, updateQuantity } = useCart();
   const [mainTitle, subTitle] = (product.name || "").split("|").map((s) => s.trim());
-  const [quantity, setQuantity] = useState(1);
   const cartItem = cart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
   const availableStock = product.inventory?.quantity ?? product.stock ?? 999;
   const isOutOfStock = availableStock <= 0;
   const [activeTab, setActiveTab] = useState("description");
   const [added, setAdded] = useState(false);
+  
+  const allImages = product.images?.length > 0 ? product.images.map(img => img.url) : (product.image ? [product.image] : ["https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg"]);
+  const [selectedImage, setSelectedImage] = useState(allImages[0]);
 
 
 
@@ -70,8 +72,6 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
       : "Millets (Bajra/Amaranth/Jowar), Cow Ghee, Jaggery/Sugar",
   };
 
-  const imageUrl = product.image || product.images?.[0]?.url || "/images/placeholder.png";
-
 
   return (
     <div className="bg-brand-warm-white min-h-screen py-4 sm:py-10">
@@ -90,19 +90,44 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
         <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10 border border-brand-sand/60 shadow-sm sm:shadow-md grid lg:grid-cols-12 gap-6 sm:gap-10 lg:gap-14 mb-8 sm:mb-14">
           
           {/* Left Column: Image Display */}
-          <div className="lg:col-span-6 relative aspect-square max-h-[380px] sm:max-h-none w-full mx-auto rounded-xl sm:rounded-2xl overflow-hidden bg-brand-cream border border-brand-sand/65">
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-700 hover:scale-105"
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              priority
-            />
-            {product.badge && (
-              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-brand-gold text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full shadow-md z-10 animate-pulse">
-                {product.badge}
-              </span>
+          <div className="lg:col-span-6 flex flex-col gap-4">
+            <div className="relative aspect-square max-h-[380px] sm:max-h-none w-full mx-auto rounded-xl sm:rounded-2xl overflow-hidden bg-brand-cream border border-brand-sand/65">
+              <Image
+                src={selectedImage}
+                alt={product.name}
+                fill
+                className="object-cover transition-transform duration-700 hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
+              {product.badge && (
+                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-brand-gold text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full shadow-md z-10 animate-pulse">
+                  {product.badge}
+                </span>
+              )}
+            </div>
+            
+            {/* Thumbnail Gallery */}
+            {allImages.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+                {allImages.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(imgUrl)}
+                    className={`relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === imgUrl ? "border-brand-gold opacity-100 shadow-md" : "border-transparent opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <Image
+                      src={imgUrl}
+                      alt={`${product.name} thumbnail ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
 

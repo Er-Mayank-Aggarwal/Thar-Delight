@@ -31,7 +31,7 @@ export default function About() {
             {/* Image display */}
             <div className="relative aspect-square sm:aspect-[4/3] rounded-3xl overflow-hidden bg-brand-cream border border-brand-sand shadow-lg">
               <Image
-                src="/images/products/ajwain-millet-cookies.jpeg"
+                src="https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395008/thar-delight/products/ajwain-millet-cookies.jpg"
                 alt="Baking traditional cookies"
                 fill
                 className="object-cover"

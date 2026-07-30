@@ -115,7 +115,7 @@ export default function Header() {
                 {/* Logo (aligned left) */}
                 <Link href="/" className="flex-shrink-0 group flex items-center">
                   <Image
-                    src="/images/logo.png"
+                    src="https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395001/thar-delight/logo.png"
                     alt="Thar Delight"
                     width={200}
                     height={200}

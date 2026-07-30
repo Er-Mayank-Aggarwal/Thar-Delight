@@ -28,6 +28,7 @@ export default function AdminProductsClient({ initialProducts, categories }) {
   const [editingProduct, setEditingProduct] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
   const emptyForm = {
@@ -37,7 +38,7 @@ export default function AdminProductsClient({ initialProducts, categories }) {
     categoryId: categories.length > 0 ? categories[0].id : "",
     isActive: true,
     isFeatured: false,
-    imageUrl: "",
+    imageUrls: [""],
   };
   const [formData, setFormData] = useState(emptyForm);
 
@@ -69,7 +70,7 @@ export default function AdminProductsClient({ initialProducts, categories }) {
       categoryId: product.categoryId,
       isActive: product.isActive,
       isFeatured: product.isFeatured,
-      imageUrl: product.images?.[0]?.url || "",
+      imageUrls: product.images?.length > 0 ? product.images.map(img => img.url) : [""],
     });
     setError(null);
     setShowModal(true);
@@ -88,7 +89,7 @@ export default function AdminProductsClient({ initialProducts, categories }) {
       categoryId: formData.categoryId,
       isActive: formData.isActive,
       isFeatured: formData.isFeatured,
-      imageUrl: formData.imageUrl || undefined,
+      imageUrls: formData.imageUrls.filter(url => url.trim() !== ""),
     };
 
     let result;
@@ -115,6 +116,38 @@ export default function AdminProductsClient({ initialProducts, categories }) {
     }
 
     setSaving(false);
+  };
+
+  const handleUpload = async (e, index) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    const formDataObj = new FormData();
+    formDataObj.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataObj,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const newUrls = [...formData.imageUrls];
+        newUrls[index] = data.url;
+        setFormData({ ...formData, imageUrls: newUrls });
+      } else {
+        setError(data.error || "Failed to upload image");
+      }
+    } catch (err) {
+      setError("An error occurred during upload");
+    } finally {
+      setUploading(false);
+      // Reset input value so same file can be uploaded again if needed
+      e.target.value = "";
+    }
   };
 
 
@@ -501,21 +534,93 @@ export default function AdminProductsClient({ initialProducts, categories }) {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Image URLs */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1.5">
-                  Image URL{" "}
-                  <span className="text-gray-400 font-normal">(optional)</span>
+                  Image URLs <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.imageUrl}
-                  onChange={(e) =>
-                    setFormData({ ...formData, imageUrl: e.target.value })
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
-                />
+                <div className="space-y-3">
+                  {formData.imageUrls.map((url, index) => (
+                    <div key={index}>
+                      {url.trim() !== "" ? (
+                        /* Image is set — show preview + delete */
+                        <div className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl border border-gray-200">
+                          <div className="w-14 h-14 rounded-lg overflow-hidden bg-brand-cream flex-shrink-0 relative">
+                            <img
+                              src={url}
+                              alt={`Product image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <p className="flex-1 text-xs text-gray-500 truncate">{url}</p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (formData.imageUrls.length > 1) {
+                                const newUrls = formData.imageUrls.filter((_, i) => i !== index);
+                                setFormData({ ...formData, imageUrls: newUrls });
+                              } else {
+                                const newUrls = [...formData.imageUrls];
+                                newUrls[index] = "";
+                                setFormData({ ...formData, imageUrls: newUrls });
+                              }
+                            }}
+                            className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors flex-shrink-0"
+                            title="Remove image"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        /* Empty slot — show input + upload */
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={url}
+                            onChange={(e) => {
+                              const newUrls = [...formData.imageUrls];
+                              newUrls[index] = e.target.value;
+                              setFormData({ ...formData, imageUrls: newUrls });
+                            }}
+                            placeholder="https://example.com/image.jpg"
+                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-gold/30 focus:border-brand-gold transition-all"
+                          />
+                          <label className="flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl cursor-pointer transition-colors text-sm font-medium whitespace-nowrap">
+                            {uploading ? "Uploading..." : "Upload"}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploading}
+                              onChange={(e) => handleUpload(e, index)}
+                            />
+                          </label>
+                          {formData.imageUrls.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newUrls = formData.imageUrls.filter((_, i) => i !== index);
+                                setFormData({ ...formData, imageUrls: newUrls });
+                              }}
+                              className="px-3 py-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({ ...formData, imageUrls: [...formData.imageUrls, ""] });
+                    }}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-gold hover:text-brand-gold-dark transition-colors"
+                  >
+                    <Plus size={16} /> Add Another Image
+                  </button>
+                </div>
               </div>
 
               {/* Toggles */}

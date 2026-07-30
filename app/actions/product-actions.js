@@ -21,7 +21,6 @@ export async function getFeaturedProducts() {
     where: {
       isFeatured: true
     },
-    take: 4,
     include: {
       inventory: true,
       images: { where: { isPrimary: true }, take: 1 },
@@ -101,8 +100,11 @@ export async function createProduct(data) {
         isActive: parsed.data.isActive,
         isFeatured: parsed.data.isFeatured,
         categoryId: parsed.data.categoryId,
-        images: parsed.data.imageUrl ? {
-          create: { url: parsed.data.imageUrl, isPrimary: true }
+        images: (parsed.data.imageUrls && parsed.data.imageUrls.length > 0) ? {
+          create: parsed.data.imageUrls.filter(url => url.trim() !== "").map((url, index) => ({
+            url: url.trim(),
+            isPrimary: index === 0
+          }))
         } : undefined,
         inventory: {
           create: { quantity: 0, lowStockThreshold: 5 }
@@ -144,6 +146,17 @@ export async function updateProduct(id, data) {
         isActive: parsed.data.isActive,
         isFeatured: parsed.data.isFeatured,
         categoryId: parsed.data.categoryId,
+        ...(parsed.data.imageUrls !== undefined ? {
+          images: {
+            deleteMany: {},
+            ...(parsed.data.imageUrls.length > 0 ? {
+              create: parsed.data.imageUrls.filter(url => url.trim() !== "").map((url, index) => ({
+                url: url.trim(),
+                isPrimary: index === 0
+              }))
+            } : {})
+          }
+        } : {})
       }
     });
 

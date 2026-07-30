@@ -4,10 +4,10 @@ import { ArrowRight } from "lucide-react";
 import { getCategoriesWithProductCount } from "@/app/actions/product-actions";
 
 const categoryStyleMap = {
-  "millet-cookies": { color: "from-amber-700 to-amber-900", image: "/images/categories/millet-cookies.jpg" },
-  "millet-snacks": { color: "from-yellow-600 to-yellow-800", image: "/images/categories/snacks.jpg" },
-  "farali": { color: "from-orange-600 to-orange-800", image: "/images/categories/farali-cookies.jpg" },
-  "wooden-craft": { color: "from-stone-600 to-stone-800", image: "/images/categories/wooden-craft.jpg" },
+  "millet-cookies": { color: "from-amber-700 to-amber-900", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395004/thar-delight/categories/millet-cookies.jpg" },
+  "millet-snacks": { color: "from-yellow-600 to-yellow-800", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395005/thar-delight/categories/snacks.jpg" },
+  "farali": { color: "from-orange-600 to-orange-800", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395006/thar-delight/categories/farali-cookies.jpg" },
+  "wooden-craft": { color: "from-stone-600 to-stone-800", image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395007/thar-delight/categories/wooden-craft.jpg" },
 };
 
 
@@ -17,7 +17,7 @@ export default async function CategoryShowcase() {
   const categories = dbCategories.map((c) => {
     const style = categoryStyleMap[c.slug] || {
       color: "from-amber-700 to-amber-900",
-      image: "/images/categories/millet-cookies.jpg",
+      image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395004/thar-delight/categories/millet-cookies.jpg",
     };
     return {
       ...c,

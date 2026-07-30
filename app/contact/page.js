@@ -81,7 +81,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-serif text-lg text-brand-brown font-semibold mb-1">Call Us</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    <a href="tel:+919876543210" className="hover:text-brand-gold transition-colors">+91 98765 43210</a>
+                    <a href="tel:+918955143139" className="hover:text-brand-gold transition-colors">+91 89551 43139</a>
                   </p>
                 </div>
               </div>

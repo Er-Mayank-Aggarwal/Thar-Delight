@@ -71,7 +71,7 @@ export default function CartDrawer({ isOpen, onClose }) {
               <div key={item.id} className="flex gap-4 bg-white p-3 rounded-2xl border border-brand-sand/30 shadow-sm relative group">
                 <div className="relative w-20 h-20 bg-brand-cream rounded-xl overflow-hidden flex-shrink-0">
                     <Image
-                      src={item.image || item.images?.[0]?.url || "/images/placeholder.png"}
+                      src={item.image || item.images?.[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg"}
                       alt={item.name}
                       fill
                       sizes="64px"

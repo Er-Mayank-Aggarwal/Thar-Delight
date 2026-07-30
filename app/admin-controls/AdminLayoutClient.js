@@ -163,7 +163,7 @@ export default function AdminLayoutClient({ children }) {
             <div className="hidden lg:block" />
             <div className="flex items-center gap-3">
               <img
-                src="/images/logo.png"
+                src="https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395001/thar-delight/logo.png"
                 alt="Thar Delight"
                 className="w-9 h-9 rounded-full object-cover border-2 border-brand-gold/30"
               />

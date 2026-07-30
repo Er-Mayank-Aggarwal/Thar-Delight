@@ -7,7 +7,7 @@ export const categories = [
     productCount: 3,
     color: "from-amber-700 to-amber-900",
     icon: "🍪",
-    image: "/images/categories/millet-cookies.jpg",
+    image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395004/thar-delight/categories/millet-cookies.jpg",
   },
   {
     id: 2,
@@ -17,7 +17,7 @@ export const categories = [
     productCount: 2,
     color: "from-yellow-600 to-yellow-800",
     icon: "✨",
-    image: "/images/categories/snacks.jpg",
+    image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395005/thar-delight/categories/snacks.jpg",
   },
   {
     id: 3,
@@ -27,7 +27,7 @@ export const categories = [
     productCount: 2,
     color: "from-orange-600 to-orange-800",
     icon: "🌾",
-    image: "/images/categories/farali-cookies.jpg",
+    image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395006/thar-delight/categories/farali-cookies.jpg",
   },
 ];
 

@@ -56,7 +56,7 @@ function OrderCard({ order }) {
           {order.items.map((item, idx) => (
             <div key={idx} className="flex items-center gap-4">
               <div className="relative w-16 h-16 bg-brand-cream rounded-lg overflow-hidden border border-brand-sand/40 flex-shrink-0">
-                <Image src={item.product.image || item.product.images?.[0]?.url || "/images/placeholder.png"} alt={item.product.name} fill className="object-cover" />
+                <Image src={item.product.image || item.product.images?.[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg"} alt={item.product.name} fill className="object-cover" />
               </div>
               <div className="flex-1">
                 <h4 className="text-sm font-medium text-brand-brown line-clamp-1">{item.product.name}</h4>

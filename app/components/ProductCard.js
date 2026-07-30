@@ -58,7 +58,7 @@ export default function ProductCard({ product }) {
     : null;
 
 
-  const imageUrl = product.image || product.images?.[0]?.url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
+  const imageUrl = product.image || product.images?.[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
 
   const reviewCount = Array.isArray(product.reviews) ? product.reviews.length : (product.reviews || product.reviewCount || 0);
   const calculatedRating = Array.isArray(product.reviews) && product.reviews.length > 0

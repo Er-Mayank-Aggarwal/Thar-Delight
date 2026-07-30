@@ -21,6 +21,7 @@ Welcome to **Thar Delight** — an artisanal e-commerce web application built wi
 - **Database**: [Neon PostgreSQL](https://neon.tech/) (Serverless DB with connection pooling)
 - **ORM**: [Prisma ORM](https://www.prisma.io/)
 - **Authentication**: [Better Auth](https://www.better-auth.com/) (Google OAuth & Email/Password)
+- **Media & Image Storage**: [Cloudinary](https://cloudinary.com/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **Icons & Fonts**: Lucide React, Google Fonts (Inter, Lora, Dancing Script)
 - **Validation**: Zod & custom sliding-window rate limiters
@@ -53,6 +54,9 @@ BETTER_AUTH_SECRET="your-32-character-random-secret-key"
 BETTER_AUTH_URL="http://localhost:3000"
 GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
 ```
 
 ### 3. Database Setup & Seeding
