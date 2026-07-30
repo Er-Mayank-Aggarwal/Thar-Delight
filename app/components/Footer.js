@@ -10,7 +10,6 @@ const footerLinks = {
     { name: "Millet Cookies", href: "/shop?category=millet-cookies" },
     { name: "Millet Snacks", href: "/shop?category=millet-snacks" },
     { name: "Farali Cookies", href: "/shop?category=farali" },
-
   ],
   company: [
     { name: "About Us", href: "/about" },
