@@ -16,41 +16,46 @@ const bgGradients = [
   "#8a6730, #a87d3a, #8a6730", // Millet Bhel
 ];
 
-export default function HeroSection() {
+export default function HeroSection({ initialProducts = [] }) {
   const [rotationStep, setRotationStep] = useState(0);
   const [radius, setRadius] = useState(400);
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const [realProducts, setRealProducts] = useState([]);
+  const [realProducts, setRealProducts] = useState(initialProducts);
 
   const activeIndex = realProducts.length > 0 
     ? ((rotationStep % realProducts.length) + realProducts.length) % realProducts.length 
     : 0;
 
+  const activeProduct = realProducts[activeIndex] || {};
+
   // Auto-rotate forward continuously every 5 seconds without rewinding
   useEffect(() => {
+    if (realProducts.length <= 1) return;
     const timer = setInterval(() => {
       setRotationStep((prev) => prev + 1);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [realProducts.length]);
 
-  // Fetch real products dynamically from DB on mount
+  // Sync if initialProducts changes
   useEffect(() => {
-    const loadDbProducts = async () => {
-      try {
-        const prods = await getHeroProducts(6);
-        setRealProducts(prods);
-      } catch (e) {
-        console.error("Failed to load hero products from DB:", e);
-      }
-    };
-    loadDbProducts();
-  }, []);
-
-
+    if (initialProducts && initialProducts.length > 0) {
+      setRealProducts(initialProducts);
+    } else {
+      const loadDbProducts = async () => {
+        try {
+          const prods = await getHeroProducts(6);
+          setRealProducts(prods);
+        } catch (e) {
+          console.error("Failed to load hero products from DB:", e);
+        }
+      };
+      loadDbProducts();
+    }
+  }, [initialProducts]);
 
   // Update circle radius based on screen size
   useEffect(() => {
@@ -58,20 +63,31 @@ export default function HeroSection() {
       if (window.innerWidth < 640) {
         setRadius(160); // Mobile (diameter 320px) to fit better
       } else if (window.innerWidth < 1024) {
-        setRadius(260); // Tablet (diameter 520px)
+        setRadius(260); // Tablet
       } else {
-        setRadius(400); // Desktop (diameter 800px)
+        setRadius(400); // Desktop
       }
     };
-    
     updateRadius();
     window.addEventListener("resize", updateRadius);
     return () => window.removeEventListener("resize", updateRadius);
   }, []);
 
-  const activeProduct = realProducts[activeIndex];
-  const thumbSize = radius <= 160 ? 56 : radius <= 260 ? 72 : 88;
-  const baseAngle = radius < 400 ? 90 : 180;
+  const handleAddToCart = () => {
+    if (!activeProduct.id || (activeProduct.inventory && activeProduct.inventory.quantity <= 0)) return;
+    setIsAdding(true);
+    addToCart(activeProduct, 1);
+    setIsAdding(false);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
+  if (!realProducts || realProducts.length === 0) {
+    return null;
+  }
+
+  const baseAngle = radius < 400 ? 180 : 160;
+  const thumbSize = radius < 400 ? 64 : radius < 1024 ? 56 : 96;
 
   const handleSelectProduct = (idx) => {
     const total = realProducts.length || 1;
@@ -81,21 +97,11 @@ export default function HeroSection() {
     setRotationStep((prev) => prev + diff);
   };
 
-  const handleAddToCart = () => {
-    // Wait until real product data is loaded, check stock
-    if (!activeProduct.inventory || activeProduct.inventory.quantity <= 0) return;
-    
-    addToCart(activeProduct);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
-  };
-
-
   return (
     <section 
       className="relative overflow-hidden min-h-[100vh] flex flex-col justify-center py-20 lg:py-0 transition-all duration-[1000ms] ease-in-out"
       style={{
-        background: `linear-gradient(135deg, ${bgGradients[activeIndex]})`
+        background: `linear-gradient(135deg, ${bgGradients[activeIndex % bgGradients.length]})`
       }}
     >
       {/* Decorative Floating Sparks */}
@@ -120,7 +126,7 @@ export default function HeroSection() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-gold/10 border border-brand-gold/20 animate-fade-in-up duration-500">
                 <Leaf size={14} className="text-brand-gold animate-spin-slow" />
                 <span className="text-brand-gold text-xs font-semibold uppercase tracking-wider">
-                  {(activeProduct?.category || "millet-cookies").toString().replace("-", " ")}
+                  {(activeProduct.category || "").toString().replace("-", " ")}
                 </span>
               </div>
 

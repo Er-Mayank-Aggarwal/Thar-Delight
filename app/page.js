@@ -5,11 +5,14 @@ import FeaturedProducts from "./components/FeaturedProducts";
 import ValuesSection from "./components/ValuesSection";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { getHeroProducts } from "./actions/product-actions";
 
-export default function Home() {
+export default async function Home() {
+  const heroProducts = await getHeroProducts(6);
+
   return (
     <>
-      <HeroSection />
+      <HeroSection initialProducts={heroProducts} />
       <CategoryShowcase />
       <FeaturedProducts />
       <ValuesSection />
