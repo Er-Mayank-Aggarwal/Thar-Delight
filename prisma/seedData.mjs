@@ -1,4 +1,4 @@
-export const products = [
+export const seedProducts = [
   {
     id: 1,
     name: "Ajwain Millet Cookies | Gluten-Free Savory Cookies With Desi Ghee",
@@ -113,17 +113,13 @@ export const products = [
   },
 ];
 
-
-
-
-export const getFeaturedProducts = () => {
-  return products.filter((p) => p.badge === "Best Seller" || p.badge === "Popular" || p.badge === "Sale" || p.rating >= 4.8);
-};
-
-export const getProductsByCategory = (categorySlug) => {
-  return products.filter((p) => p.category === categorySlug);
-};
-
-export const getProductBySlug = (slug) => {
-  return products.find((p) => p.slug === slug);
-};
+export const seedInventory = [
+  { productId: 1, currentStock: 45, lowStockThreshold: 10 },
+  { productId: 2, currentStock: 30, lowStockThreshold: 10 },
+  { productId: 3, currentStock: 12, lowStockThreshold: 5 },
+  { productId: 4, currentStock: 25, lowStockThreshold: 5 },
+  { productId: 5, currentStock: 18, lowStockThreshold: 5 },
+  { productId: 6, currentStock: 60, lowStockThreshold: 15 },
+  { productId: 7, currentStock: 8, lowStockThreshold: 10 },
+  { productId: 8, currentStock: 50, lowStockThreshold: 15 },
+];

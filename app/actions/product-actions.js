@@ -244,4 +244,41 @@ export async function getHeroProductRatings(slugs) {
   }));
 }
 
+export async function getHeroProducts(limit = 6) {
+  const dbProducts = await prisma.product.findMany({
+    where: { isActive: true },
+    take: limit,
+    include: {
+      images: { where: { isPrimary: true }, take: 1 },
+      inventory: true,
+      reviews: { where: { isPublished: true }, select: { rating: true } },
+    },
+    orderBy: [
+      { isFeatured: "desc" },
+      { createdAt: "desc" }
+    ]
+  });
+
+  return dbProducts.map((p) => {
+    const reviewCount = p.reviews.length;
+    const avgRating = reviewCount > 0
+      ? (p.reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
+      : "0.0";
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      price: p.price ? Number(p.price.toString()) : 0,
+      originalPrice: p.originalPrice ? Number(p.originalPrice.toString()) : null,
+      shortDescription: p.description || "",
+      image: p.images[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg",
+      rating: parseFloat(avgRating),
+      reviews: reviewCount,
+      inventory: p.inventory,
+      inStock: (p.inventory?.quantity ?? 999) > 0,
+    };
+  });
+}
+
 

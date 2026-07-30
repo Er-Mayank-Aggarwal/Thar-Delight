@@ -59,12 +59,11 @@ async function getDbCartId() {
   return cart.id;
 }
 
-import { products as staticProducts } from "@/app/data/products";
 
 async function resolveProduct(identifier) {
   if (!identifier) return null;
 
-  let dbProd = await prisma.product.findFirst({
+  return await prisma.product.findFirst({
     where: {
       OR: [
         { id: identifier },
@@ -73,18 +72,6 @@ async function resolveProduct(identifier) {
     },
     include: { inventory: true }
   });
-
-  if (!dbProd) {
-    const staticP = staticProducts.find(p => p.id === identifier || p.slug === identifier);
-    if (staticP) {
-      dbProd = await prisma.product.findUnique({
-        where: { slug: staticP.slug },
-        include: { inventory: true }
-      });
-    }
-  }
-
-  return dbProd;
 }
 
 export async function addProductToDbCart(productIdOrSlug, quantity = 1) {

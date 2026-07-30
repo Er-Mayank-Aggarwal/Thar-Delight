@@ -4,16 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ShoppingBag, Star, Leaf, Loader2 } from "lucide-react";
-import { products } from "../data/products";
 import { useCart } from "../context/CartContext";
-import { getProductBySlug, getHeroProductRatings } from "../actions/product-actions";
-
-// Select 6 products for the circular wheel (without fake rating fallbacks)
-const wheelProducts = products.slice(0, 6).map(p => ({
-  ...p,
-  rating: 0,
-  reviews: 0
-}));
+import { getHeroProducts } from "../actions/product-actions";
 
 const bgGradients = [
   "#6e4b2d, #8a5e38, #6e4b2d", // Ajwain Cookies - Lighter rich brown
@@ -31,7 +23,7 @@ export default function HeroSection() {
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const [realProducts, setRealProducts] = useState(wheelProducts);
+  const [realProducts, setRealProducts] = useState([]);
 
   const activeIndex = realProducts.length > 0 
     ? ((rotationStep % realProducts.length) + realProducts.length) % realProducts.length 
@@ -45,37 +37,14 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, []);
 
-
-  // Fetch real products & ratings from DB on mount
+  // Fetch real products dynamically from DB on mount
   useEffect(() => {
     const loadDbProducts = async () => {
       try {
-        const slugs = wheelProducts.map((p) => p.slug);
-        const ratings = await getHeroProductRatings(slugs);
-        const ratingMap = {};
-        ratings.forEach((r) => {
-          ratingMap[r.slug] = r;
-        });
-
-        const updated = wheelProducts.map((p) => {
-          const r = ratingMap[p.slug];
-          if (r) {
-            return {
-              ...p,
-              id: r.id,
-              price: r.price ?? p.price,
-              originalPrice: r.originalPrice ?? p.originalPrice,
-              inventory: r.inventory,
-              rating: r.count > 0 ? r.avg : 0,
-              reviews: r.count,
-            };
-          }
-          return p;
-        });
-
-        setRealProducts(updated);
+        const prods = await getHeroProducts(6);
+        setRealProducts(prods);
       } catch (e) {
-        console.error("Failed to load hero product DB data:", e);
+        console.error("Failed to load hero products from DB:", e);
       }
     };
     loadDbProducts();

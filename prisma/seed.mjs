@@ -1,8 +1,7 @@
 import 'dotenv/config';
 import { prisma } from '../lib/prisma.js';
 
-import { products } from '../app/data/products.js';
-import { inventory } from '../app/data/dummy-inventory.js';
+import { seedProducts as products, seedInventory as inventory } from './seedData.mjs';
 
 async function main() {
   console.log('Start seeding database...');
