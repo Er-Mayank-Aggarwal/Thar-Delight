@@ -86,7 +86,8 @@ export default function HeroSection({ initialProducts = [] }) {
     return null;
   }
 
-  const baseAngle = radius < 400 ? 180 : 160;
+  const stepAngle = realProducts.length > 0 ? 360 / realProducts.length : 60;
+  const baseAngle = 180;
   const thumbSize = radius < 400 ? 64 : radius < 1024 ? 56 : 96;
 
   const handleSelectProduct = (idx) => {
@@ -257,7 +258,7 @@ export default function HeroSection({ initialProducts = [] }) {
               style={{
                 width: `${radius * 2}px`,
                 height: `${radius * 2}px`,
-                transform: `rotate(-${rotationStep * 60}deg)`,
+                transform: `rotate(-${rotationStep * stepAngle}deg)`,
                 right: radius < 400 ? "50%" : `-${radius}px`,
                 marginRight: radius < 400 ? `-${radius}px` : "0",
                 top: "50%",
@@ -267,7 +268,7 @@ export default function HeroSection({ initialProducts = [] }) {
             >
               {/* Product selector nodes placed on the circle rim */}
               {realProducts.map((product, idx) => {
-                const angle = baseAngle + idx * 60; // Dynamic base angle based on screen size
+                const angle = baseAngle + idx * stepAngle; // Dynamic base angle based on screen size
                 const isActive = idx === activeIndex;
 
                 return (
@@ -275,7 +276,7 @@ export default function HeroSection({ initialProducts = [] }) {
                     key={product.id}
                     className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
                     style={{
-                      transform: `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg) rotate(${rotationStep * 60}deg)`,
+                      transform: `rotate(${angle}deg) translate(${radius}px) rotate(-${angle}deg) rotate(${rotationStep * stepAngle}deg)`,
                     }}
                   >
                     {/* Compact circular thumbnail selector */}
