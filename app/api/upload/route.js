@@ -5,7 +5,7 @@ import { Readable } from "stream";
 
 // Configure Cloudinary using environment variables
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
@@ -20,6 +20,23 @@ export async function POST(request) {
 
     if (!file) {
       return NextResponse.json({ error: "No files received." }, { status: 400 });
+    }
+
+    const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Invalid file type. Only JPEG, PNG, WebP, and AVIF images are supported." },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "File size exceeds the 5MB limit." },
+        { status: 400 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

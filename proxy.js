@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 
+/**
+ * Next.js 16 Proxy — runs on every matched route before rendering.
+ *
+ * Responsibilities:
+ *  1. Protect /admin-controls/* routes (admin/owner only)
+ *
+ * Note: Security headers are handled in next.config.mjs headers()
+ */
+
 export async function proxy(request) {
   const { pathname } = request.nextUrl;
 
@@ -39,7 +48,6 @@ export async function proxy(request) {
     return NextResponse.rewrite(new URL("/_not-found", request.url));
   }
 }
-
 
 export const config = {
   matcher: ["/admin-controls/:path*"],

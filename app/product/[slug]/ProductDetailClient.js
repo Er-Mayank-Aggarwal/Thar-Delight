@@ -57,19 +57,25 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
     setIsSubmittingReview(false);
   };
 
-  // Dynamic specs based on product category
+  // Dynamic specs based on product details and category
   const specDetails = {
-    weight: product.category?.slug === "wooden-craft" ? "450g (Approx)" : "150g pack",
-    shelfLife: product.category?.slug === "wooden-craft" ? "Lifetime" : "4 Months from mfg",
-    allergens: product.category?.slug === "millet-cookies" 
-      ? "Sesame, Dairy (Ghee). Baked in a facility that handles nuts." 
-      : product.category?.slug === "snacks" 
-      ? "Peanuts. Seasoned with traditional rock salt." 
+    weight: product.weight ? `${product.weight}g pack` : (product.category?.slug === "wooden-craft" ? "450g (Approx)" : "200g pack"),
+    shelfLife: product.slug === "millet-puff" 
+      ? "1 Month from mfg" 
+      : product.slug === "millet-bhel" 
+      ? "2 Months from mfg" 
+      : product.slug === "jowar-flakes" 
+      ? "6 Months from mfg" 
+      : "4 Months from mfg",
+    allergens: product.slug === "millet-bhel" 
+      ? "Peanuts (Roasted). Seasoned with traditional rock salt." 
+      : product.category?.slug === "millet-cookies" 
+      ? "Milk, Sesame. Prepared in a clean facility that handles nuts." 
       : "None",
     origin: "Jodhpur, Rajasthan, India",
-    materials: product.category?.slug === "wooden-craft" 
-      ? "100% Solid Acacia Wood" 
-      : "Millets (Bajra/Amaranth/Jowar), Cow Ghee, Jaggery/Sugar",
+    materials: product.ingredients || (product.category?.slug === "farali" 
+      ? "Rajgira, Barnyard Millet (Sama), Pure Cow Desi Ghee, Rock Salt" 
+      : "Wholesome Millets (Bajra/Jowar/Ragi), Pure Cow Desi Ghee, Traditional Desi Khaand"),
   };
 
 
@@ -278,7 +284,7 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
               </div>
               <div className="flex flex-col items-center sm:flex-row sm:items-center gap-1 sm:gap-2 text-center sm:text-left">
                 <Truck size={16} className="text-brand-gold flex-shrink-0" />
-                <span className="leading-tight">Free Shipping &gt; ₹500</span>
+                <span className="leading-tight">Free Shipping &gt; ₹1,000</span>
               </div>
             </div>
 

@@ -22,7 +22,11 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata = {
-  title: "Thar Delight — Authentic Flavors from the Thar Desert",
+  metadataBase: new URL(process.env.BETTER_AUTH_URL || "https://thardelight.com"),
+  title: {
+    default: "Thar Delight — Authentic Flavors from the Thar Desert",
+    template: "%s — Thar Delight",
+  },
   description:
     "Discover wholesome millet cookies, traditional farali treats, and handcrafted wooden serveware from the heart of Rajasthan. 100% natural, no preservatives.",
   keywords: [
@@ -34,6 +38,31 @@ export const metadata = {
     "organic snacks",
     "handcrafted",
   ],
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "Thar Delight",
+    title: "Thar Delight — Authentic Flavors from the Thar Desert",
+    description:
+      "Wholesome millet cookies, farali treats & handcrafted wooden serveware from Rajasthan. 100% natural, no preservatives.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Thar Delight — Authentic Flavors from the Thar Desert",
+    description:
+      "Wholesome millet cookies, farali treats & handcrafted wooden serveware from Rajasthan.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({ children }) {

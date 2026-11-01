@@ -11,9 +11,39 @@ export async function generateMetadata({ params }) {
   if (!product) {
     return { title: "Product Not Found — Thar Delight" };
   }
+
+  const primaryImage =
+    product.images?.find((img) => img.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+  const desc =
+    product.seoDescription ||
+    product.shortDescription ||
+    product.description?.slice(0, 160) ||
+    "Artisanal millet cookies and treats from Rajasthan.";
+
   return {
-    title: `${product.name} — Thar Delight`,
-    description: product.shortDescription || product.description,
+    title: product.seoTitle || product.name,
+    description: desc,
+    openGraph: {
+      title: product.seoTitle || product.name,
+      description: desc,
+      images: [
+        {
+          url: primaryImage,
+          width: 800,
+          height: 800,
+          alt: product.name,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.seoTitle || product.name,
+      description: desc,
+      images: [primaryImage],
+    },
   };
 }
 
@@ -46,14 +76,60 @@ export default async function ProductDetail({ params }) {
   ]);
 
   const recommendedProducts = featuredProducts
-    .filter(feat => feat.id !== product.id)
+    .filter((feat) => feat.id !== product.id)
     .slice(0, 3);
 
+  // Schema.org Structured Data
+  const primaryImage =
+    product.images?.find((img) => img.isPrimary)?.url ||
+    product.images?.[0]?.url ||
+    "";
+  const inStock = (product.inventory?.quantity ?? 0) > 0;
+  const avgRating = product.reviews?.length
+    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1)
+    : null;
+
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    name: product.name,
+    image: product.images?.map((img) => img.url) || [primaryImage],
+    description: product.description,
+    sku: product.sku || product.slug,
+    brand: {
+      "@type": "Brand",
+      name: "Thar Delight",
+    },
+    offers: {
+      "@type": "Offer",
+      url: `https://thardelight.com/product/${product.slug}`,
+      priceCurrency: "INR",
+      price: product.price,
+      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+    },
+    ...(avgRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: avgRating,
+            reviewCount: product.reviews.length,
+          },
+        }
+      : {}),
+  };
+
   return (
-    <ProductDetailClient
-      product={product}
-      relatedProducts={relatedProducts}
-      recommendedProducts={recommendedProducts}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailClient
+        product={product}
+        relatedProducts={relatedProducts}
+        recommendedProducts={recommendedProducts}
+      />
+    </>
   );
 }

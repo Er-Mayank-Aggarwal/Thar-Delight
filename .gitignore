@@ -19,6 +19,8 @@
 # misc
 .DS_Store
 *.pem
+*.zip
+
 
 # debug
 npm-debug.log*
@@ -50,3 +52,8 @@ next-env.d.ts
 .idea/
 *.swp
 *.swo
+
+# local notes & planning
+todo.md
+TODO.md
+

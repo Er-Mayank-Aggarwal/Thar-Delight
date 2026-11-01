@@ -160,6 +160,50 @@ export async function updateDbCartItemQuantity(productIdOrSlug, quantity) {
 }
 
 
+export async function mergeGuestCartWithDb(guestItems) {
+  const userId = await getUserId();
+  if (!userId) return { success: false, error: "Not logged in" };
+  if (!Array.isArray(guestItems) || guestItems.length === 0) {
+    return { success: true };
+  }
+
+  const cartId = await getDbCartId();
+  if (!cartId) return { success: false, error: "Could not access cart" };
+
+  for (const guestItem of guestItems) {
+    const product = await resolveProduct(guestItem.id || guestItem.slug);
+    if (!product || !product.isActive) continue;
+
+    const availableStock = product.inventory?.quantity ?? 999;
+    const existing = await prisma.cartItem.findFirst({
+      where: { cartId, productId: product.id }
+    });
+
+    const addQty = typeof guestItem.quantity === "number" && guestItem.quantity > 0 ? guestItem.quantity : 1;
+
+    if (existing) {
+      const mergedQty = Math.min(existing.quantity + addQty, availableStock);
+      await prisma.cartItem.update({
+        where: { id: existing.id },
+        data: { quantity: mergedQty }
+      });
+    } else {
+      const insertQty = Math.min(addQty, availableStock);
+      if (insertQty > 0) {
+        await prisma.cartItem.create({
+          data: {
+            cartId,
+            productId: product.id,
+            quantity: insertQty,
+          }
+        });
+      }
+    }
+  }
+
+  return { success: true };
+}
+
 export async function clearDbCart() {
   const cartId = await getDbCartId();
   if (!cartId) return null;

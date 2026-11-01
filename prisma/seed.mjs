@@ -16,7 +16,6 @@ async function main() {
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
 
-
   console.log('Creating categories...');
   const uniqueCategories = [...new Set(products.map(p => p.category))];
   const categoryMap = {};
@@ -38,7 +37,6 @@ async function main() {
     const invData = inventory.find(i => i.productId === productData.id);
     const isFeatured = idx < 4 || productData.badge === "Best Seller" || productData.badge === "Popular" || Boolean(productData.badge);
 
-
     const createdProduct = await prisma.product.create({
       data: {
         name: productData.name,
@@ -46,8 +44,8 @@ async function main() {
         description: productData.shortDescription,
         price: productData.price,
         originalPrice: productData.originalPrice || null,
+        weight: productData.weight || null,
         sku: `SKU-${productData.slug}-${Math.floor(Math.random() * 1000)}`,
-
         isActive: productData.inStock,
         isFeatured: isFeatured,
         categoryId: categoryMap[productData.category],
@@ -66,6 +64,29 @@ async function main() {
       },
     });
     console.log(`Created product: ${createdProduct.name}`);
+  }
+
+  console.log('Upserting store settings (Free delivery above ₹1000, Delivery charge ₹100)...');
+  const existingSetting = await prisma.setting.findFirst();
+  if (existingSetting) {
+    await prisma.setting.update({
+      where: { id: existingSetting.id },
+      data: {
+        freeDeliveryAbove: 1000,
+        deliveryCharge: 100,
+      },
+    });
+  } else {
+    await prisma.setting.create({
+      data: {
+        businessName: "Thar Delight",
+        supportEmail: "thardelight@gmail.com",
+        supportPhone: "+91 89551 43139",
+        address: "D-15, Rameshwar Nagar, Jodhpur, Rajasthan 342001",
+        freeDeliveryAbove: 1000,
+        deliveryCharge: 100,
+      },
+    });
   }
 
   console.log('Seeding finished successfully!');

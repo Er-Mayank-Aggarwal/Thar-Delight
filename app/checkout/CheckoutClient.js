@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
-import { placeOrder } from "../actions/checkout-actions";
+import { placeOrder, verifyPayment } from "../actions/checkout-actions";
 import { syncClientCartToDb } from "../actions/cart-actions";
 import { validateCoupon } from "../actions/coupon-validate-actions";
 import { getUserAddresses, getUserProfile } from "../actions/user-actions";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import Image from "next/image";
-import { CheckCircle2, ShieldCheck, Truck, Lock } from "lucide-react";
+import Script from "next/script";
+import { CheckCircle2, ShieldCheck, Truck, Lock, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 const INDIAN_STATES = [
@@ -40,7 +40,8 @@ export default function CheckoutClient({ initialProfile, initialAddresses }) {
     state: defaultAddr?.state || "",
     zipCode: defaultAddr?.pincode || "",
     saveAddress: true,
-    couponCode: ""
+    couponCode: "",
+    paymentMethod: "ONLINE",
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +59,11 @@ export default function CheckoutClient({ initialProfile, initialAddresses }) {
   const [couponError, setCouponError] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
+
+  const discountedSubtotal = Math.max(0, cartTotal - discountAmount);
+  const tax = discountedSubtotal * 0.18;
+  const deliveryCharge = discountedSubtotal > 1000 ? 0 : 100;
+  const total = discountedSubtotal + tax + deliveryCharge;
 
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
@@ -182,6 +188,69 @@ export default function CheckoutClient({ initialProfile, initialAddresses }) {
     const res = await placeOrder(payload);
 
     if (res.success) {
+      if (res.isPrepaid && res.razorpayOrder) {
+        if (typeof window === "undefined" || !window.Razorpay) {
+          setError("Payment gateway is initializing. Please try again in a few seconds.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        const options = {
+          key: res.keyId,
+          amount: res.razorpayOrder.amount,
+          currency: "INR",
+          name: "Thar Delight",
+          description: `Order #${res.orderId.slice(0, 8).toUpperCase()}`,
+          order_id: res.razorpayOrder.id,
+          handler: async function (response) {
+            try {
+              const verifyRes = await verifyPayment({
+                orderId: res.orderId,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+
+              if (verifyRes.success) {
+                clearCart();
+                setSuccess(true);
+                setOrderId(res.orderId);
+              } else {
+                setError(verifyRes.error || "Payment verification failed. Please contact support.");
+              }
+            } catch (vErr) {
+              console.error("Verification error:", vErr);
+              setError("Payment verification encountered an issue. Please contact support.");
+            } finally {
+              setIsSubmitting(false);
+            }
+          },
+          prefill: {
+            name: `${formData.firstName} ${formData.lastName || ""}`.trim(),
+            email: formData.email,
+            contact: formData.phone,
+          },
+          theme: {
+            color: "#C28E5C",
+          },
+          modal: {
+            ondismiss: function () {
+              setIsSubmitting(false);
+              setError(`Payment was cancelled. Your pending order is saved under ID #${res.orderId.slice(0, 8).toUpperCase()}.`);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on("payment.failed", function (response) {
+          setError(response.error?.description || "Payment failed. Please try another method.");
+          setIsSubmitting(false);
+        });
+        rzp.open();
+        return;
+      }
+
+      // COD or test mode fallback
       setSuccess(true);
       setOrderId(res.orderId);
       clearCart();
@@ -406,29 +475,82 @@ export default function CheckoutClient({ initialProfile, initialAddresses }) {
 
                 <hr className="border-brand-sand/40" />
 
-                {/* Payment (Mock) */}
+                {/* Payment Selection */}
                 <section>
                   <h2 className="text-lg font-serif font-semibold text-brand-brown mb-4 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-brand-gold text-white flex items-center justify-center text-xs">3</span>
                     Payment Method
                   </h2>
-                  <div className="p-4 border-2 border-brand-gold bg-brand-gold/5 rounded-xl flex items-center gap-3">
-                    <input type="radio" readOnly checked className="w-4 h-4 text-brand-gold" />
-                    <div>
-                      <p className="font-semibold text-brand-brown">Cash on Delivery (COD)</p>
-                      <p className="text-xs text-gray-500">Pay with cash upon delivery.</p>
-                    </div>
+
+                  <div className="space-y-3">
+                    {/* Online Payment (Razorpay) */}
+                    <label
+                      className={`p-4 border-2 rounded-xl flex items-start gap-3 cursor-pointer transition-all ${
+                        formData.paymentMethod === "ONLINE"
+                          ? "border-brand-gold bg-brand-gold/5 shadow-sm"
+                          : "border-brand-sand/60 hover:border-brand-sand bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="ONLINE"
+                        checked={formData.paymentMethod === "ONLINE"}
+                        onChange={() => setFormData((prev) => ({ ...prev, paymentMethod: "ONLINE" }))}
+                        className="mt-1 w-4 h-4 text-brand-gold focus:ring-brand-gold"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-brand-brown">Online Payment (UPI, Cards, Netbanking)</p>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded">
+                            Recommended
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Pay instantly via UPI (Google Pay, PhonePe, Paytm), Debit/Credit Cards, or Netbanking. Powered by Razorpay.
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Cash on Delivery */}
+                    <label
+                      className={`p-4 border-2 rounded-xl flex items-start gap-3 cursor-pointer transition-all ${
+                        formData.paymentMethod === "COD"
+                          ? "border-brand-gold bg-brand-gold/5 shadow-sm"
+                          : "border-brand-sand/60 hover:border-brand-sand bg-white"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="COD"
+                        checked={formData.paymentMethod === "COD"}
+                        onChange={() => setFormData((prev) => ({ ...prev, paymentMethod: "COD" }))}
+                        className="mt-1 w-4 h-4 text-brand-gold focus:ring-brand-gold"
+                      />
+                      <div>
+                        <p className="font-semibold text-brand-brown">Cash on Delivery (COD)</p>
+                        <p className="text-xs text-gray-500 mt-1">Pay with cash upon delivery at your doorstep.</p>
+                      </div>
+                    </label>
                   </div>
                 </section>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 bg-brand-gold hover:bg-brand-gold-dark text-white font-bold text-lg rounded-xl transition-all shadow-xl shadow-brand-gold/20 disabled:opacity-50 flex items-center justify-center"
+                  className="w-full py-4 bg-brand-gold hover:bg-brand-gold-dark text-white font-bold text-lg rounded-xl transition-all shadow-xl shadow-brand-gold/20 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {isSubmitting ? "Processing Order..." : "Place Order Now"}
+                  <Lock size={18} />
+                  {isSubmitting
+                    ? "Processing..."
+                    : formData.paymentMethod === "ONLINE"
+                    ? `Pay ₹${total.toLocaleString("en-IN")} via Razorpay`
+                    : `Place Order (COD ₹${total.toLocaleString("en-IN")})`}
                 </button>
               </form>
+
+              <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
             </div>
           </div>
 
@@ -505,17 +627,17 @@ export default function CheckoutClient({ initialProfile, initialAddresses }) {
                 )}
                 <div className="flex justify-between">
                   <span>GST (18%)</span>
-                  <span className="font-medium text-brand-brown">₹{((cartTotal - discountAmount) * 0.18).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                  <span className="font-medium text-brand-brown">₹{tax.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className={(cartTotal - discountAmount) > 500 ? "text-emerald-500 font-medium" : "text-brand-brown font-medium"}>
-                    {(cartTotal - discountAmount) > 500 ? "Free" : "₹50"}
+                  <span className={deliveryCharge === 0 ? "text-emerald-500 font-medium" : "text-brand-brown font-medium"}>
+                    {deliveryCharge === 0 ? "Free" : "₹100"}
                   </span>
                 </div>
                 <div className="flex justify-between pt-4 border-t border-dashed border-brand-sand/60 text-lg font-bold text-brand-brown">
                   <span>Total</span>
-                  <span>₹{((cartTotal - discountAmount) + ((cartTotal - discountAmount) * 0.18) + ((cartTotal - discountAmount) > 500 ? 0 : 50)).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                  <span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>

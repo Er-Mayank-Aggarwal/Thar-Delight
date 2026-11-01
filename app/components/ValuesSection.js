@@ -22,7 +22,7 @@ const values = [
   {
     icon: Truck,
     title: "Pan-India Delivery",
-    description: "Fast, secure delivery across India. Free shipping on orders above ₹500.",
+    description: "Fast, secure delivery across India. Free shipping on orders above ₹1,000.",
   },
 ];
 

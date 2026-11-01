@@ -26,7 +26,8 @@ export default async function InvoicePage({ params }) {
     }
   });
 
-  if (!order || (order.userId !== session.userId && session.role !== "ADMIN")) {
+  const isAdminOrOwner = session.role === "ADMIN" || session.role === "OWNER";
+  if (!order || (order.userId !== session.userId && !isAdminOrOwner)) {
     notFound();
   }
 
@@ -64,6 +65,7 @@ export default async function InvoicePage({ params }) {
                 <h2 className="font-serif text-lg font-bold text-brand-brown leading-tight">{settings?.businessName || "Thar Delight"}</h2>
                 <p className="text-[11px] text-gray-500 leading-tight mt-0.5">{settings?.address || "12, Desert Crafts Plaza, Jodhpur, Rajasthan 342001"}</p>
                 {settings?.gstNumber && <p className="text-[11px] text-gray-500">GSTIN: {settings.gstNumber}</p>}
+                <p className="text-[11px] text-gray-500 font-medium">FSSAI Lic: 22223074000452</p>
               </div>
             </div>
             <div className="text-right flex-shrink-0">

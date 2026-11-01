@@ -1,40 +1,109 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { getDbCart, addProductToDbCart, removeProductFromDbCart, updateDbCartItemQuantity, clearDbCart } from "../actions/cart-actions";
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import {
+  getDbCart,
+  addProductToDbCart,
+  removeProductFromDbCart,
+  updateDbCartItemQuantity,
+  clearDbCart,
+  mergeGuestCartWithDb,
+} from "../actions/cart-actions";
+import { useSession } from "@/lib/auth-client";
 
+const GUEST_CART_KEY = "thar_delight_guest_cart";
 const CartContext = createContext();
+
+function formatDbCartItems(dbCart) {
+  if (!dbCart?.items) return [];
+  return dbCart.items.map((item) => ({
+    ...item.product,
+    image: item.product.images?.[0]?.url || item.product.image || "",
+    quantity: item.quantity,
+  }));
+}
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load cart from DB on mount
+  const { data: session, isPending: sessionPending } = useSession();
+  const userId = session?.user?.id;
+  const isMergingRef = useRef(false);
+
+  // Sync cart when session status changes or on initial mount
+  const syncCartState = useCallback(async () => {
+    if (sessionPending) return;
+
+    if (userId) {
+      try {
+        setLoading(true);
+        // Check for existing guest cart to merge
+        if (!isMergingRef.current && typeof window !== "undefined") {
+          const rawGuestCart = localStorage.getItem(GUEST_CART_KEY);
+          if (rawGuestCart) {
+            try {
+              const guestItems = JSON.parse(rawGuestCart);
+              if (Array.isArray(guestItems) && guestItems.length > 0) {
+                isMergingRef.current = true;
+                await mergeGuestCartWithDb(guestItems);
+                localStorage.removeItem(GUEST_CART_KEY);
+              }
+            } catch (err) {
+              console.error("Failed to merge guest cart with account:", err);
+            } finally {
+              isMergingRef.current = false;
+            }
+          }
+        }
+
+        // Fetch fresh cart from DB
+        const dbCart = await getDbCart();
+        setCart(formatDbCartItems(dbCart));
+      } catch (err) {
+        console.error("Failed to fetch user cart:", err);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Guest mode: load from localStorage
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem(GUEST_CART_KEY);
+          if (raw) {
+            setCart(JSON.parse(raw));
+          } else {
+            setCart([]);
+          }
+        } catch {
+          setCart([]);
+        }
+      }
+      setLoading(false);
+    }
+  }, [userId, sessionPending]);
+
   useEffect(() => {
     setIsMounted(true);
-    getDbCart()
-      .then((dbCart) => {
-        if (!dbCart) {
-          setLoading(false);
-          return;
-        }
-        // Map DB CartItems to the format our frontend expects: { ...product, quantity }
-        const formattedCart = dbCart.items.map((item) => ({
-          ...item.product,
-          quantity: item.quantity,
-        }));
-        setCart(formattedCart);
-        setLoading(false);
-      })
-      .catch((e) => {
-        console.error("Failed to fetch cart from DB", e);
-        setLoading(false);
-      });
-  }, []);
+    syncCartState();
+  }, [syncCartState]);
+
+  // Persist guest cart updates to localStorage
+  const saveGuestCart = useCallback((updatedCart) => {
+    if (typeof window !== "undefined" && !userId) {
+      try {
+        localStorage.setItem(GUEST_CART_KEY, JSON.stringify(updatedCart));
+      } catch (err) {
+        console.error("Failed to save guest cart to localStorage:", err);
+      }
+    }
+  }, [userId]);
 
   const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
+    const existingItem = cart.find(
+      (item) => item.id === product.id || (item.slug && item.slug === product.slug)
+    );
     const currentQty = existingItem ? existingItem.quantity : 0;
     const maxStock = product.inventory?.quantity ?? product.stock ?? product.quantityInStock ?? 999;
 
@@ -44,30 +113,39 @@ export function CartProvider({ children }) {
     }
 
     const previousCart = [...cart];
-    // Optimistic update
-    setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === product.id || (item.slug && item.slug === product.slug));
-      if (existing) {
-        return prevCart.map((item) =>
+    const updatedCart = existingItem
+      ? cart.map((item) =>
           item.id === product.id || (item.slug && item.slug === product.slug)
             ? { ...item, quantity: item.quantity + quantity }
             : item
-        );
-      }
-      return [...prevCart, { ...product, quantity }];
-    });
+        )
+      : [
+          ...cart,
+          {
+            ...product,
+            image: product.image || product.images?.[0]?.url || "",
+            quantity,
+          },
+        ];
 
-    // DB update in background
+    setCart(updatedCart);
+
+    if (!userId) {
+      saveGuestCart(updatedCart);
+      return;
+    }
+
+    // Logged in: Sync with DB
     const targetIdentifier = product.slug || product.id;
     addProductToDbCart(targetIdentifier, quantity)
       .then((res) => {
         if (res && res.success === false) {
           setCart(previousCart);
-          alert(res.error);
+          alert(res.error || "Failed to add to cart");
         }
       })
       .catch((e) => {
-        console.error("Failed to add to DB cart", e);
+        console.error("Failed to add to DB cart:", e);
         setCart(previousCart);
         alert("Failed to add to cart");
       });
@@ -75,15 +153,26 @@ export function CartProvider({ children }) {
 
   const removeFromCart = (productIdOrSlug) => {
     const previousCart = [...cart];
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productIdOrSlug && item.slug !== productIdOrSlug));
+    const updatedCart = cart.filter(
+      (item) => item.id !== productIdOrSlug && item.slug !== productIdOrSlug
+    );
+    setCart(updatedCart);
+
+    if (!userId) {
+      saveGuestCart(updatedCart);
+      return;
+    }
+
     removeProductFromDbCart(productIdOrSlug).catch((e) => {
-      console.error(e);
+      console.error("Failed to remove item from DB cart:", e);
       setCart(previousCart);
     });
   };
 
   const updateQuantity = (productIdOrSlug, quantity) => {
-    if (quantity < 1) return removeFromCart(productIdOrSlug);
+    if (quantity < 1) {
+      return removeFromCart(productIdOrSlug);
+    }
 
     const item = cart.find((i) => i.id === productIdOrSlug || i.slug === productIdOrSlug);
     const maxStock = item?.inventory?.quantity ?? item?.stock ?? item?.quantityInStock ?? 999;
@@ -94,39 +183,50 @@ export function CartProvider({ children }) {
     }
 
     const previousCart = [...cart];
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === productIdOrSlug || item.slug === productIdOrSlug ? { ...item, quantity } : item
-      )
+    const updatedCart = cart.map((i) =>
+      i.id === productIdOrSlug || i.slug === productIdOrSlug ? { ...i, quantity } : i
     );
+    setCart(updatedCart);
+
+    if (!userId) {
+      saveGuestCart(updatedCart);
+      return;
+    }
 
     updateDbCartItemQuantity(productIdOrSlug, quantity)
       .then((res) => {
         if (res && res.success === false) {
           setCart(previousCart);
-          alert(res.error);
+          alert(res.error || "Failed to update quantity");
         }
       })
       .catch((e) => {
-        console.error(e);
+        console.error("Failed to update item quantity in DB:", e);
         setCart(previousCart);
         alert("Failed to update quantity");
       });
   };
 
-
-
   const clearCart = () => {
     const previousCart = [...cart];
     setCart([]);
-    clearDbCart().catch((e) => {
-      console.error(e);
-      setCart(previousCart);
-    });
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(GUEST_CART_KEY);
+      } catch {}
+    }
+
+    if (userId) {
+      clearDbCart().catch((e) => {
+        console.error("Failed to clear DB cart:", e);
+        setCart(previousCart);
+      });
+    }
   };
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cartTotal = cart.reduce((total, item) => total + (item.price || 0) * item.quantity, 0);
 
   return (
     <CartContext.Provider
@@ -138,7 +238,7 @@ export function CartProvider({ children }) {
         clearCart,
         cartCount,
         cartTotal,
-        loading,
+        loading: loading || !isMounted,
       }}
     >
       {children}

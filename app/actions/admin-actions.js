@@ -121,29 +121,75 @@ export async function updateOrderStatus(orderId, newStatus) {
     return { success: false, error: parsed.error.errors[0]?.message || "Invalid input" };
   }
 
-  try {
-    // Update order status
-    await prisma.order.update({
-      where: { id: parsed.data.orderId },
-      data: { orderStatus: parsed.data.newStatus }
-    });
+  const { orderId: targetOrderId, newStatus: statusToSet } = parsed.data;
 
-    // Create status history record
-    await prisma.orderStatusHistory.create({
-      data: {
-        orderId: parsed.data.orderId,
-        status: parsed.data.newStatus,
+  try {
+    await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: targetOrderId },
+        include: { items: true },
+      });
+
+      if (!order) {
+        throw new Error("Order not found");
       }
+
+      const prevStatus = order.orderStatus;
+      if (prevStatus === statusToSet) {
+        return;
+      }
+
+      const isCancellingOrReturning = ["CANCELLED", "RETURNED"].includes(statusToSet);
+      const wasCancelledOrReturned = ["CANCELLED", "RETURNED"].includes(prevStatus);
+
+      // If moving TO Cancelled/Returned from an active status -> RESTOCK inventory
+      if (isCancellingOrReturning && !wasCancelledOrReturned) {
+        for (const item of order.items) {
+          await tx.inventory.update({
+            where: { productId: item.productId },
+            data: {
+              quantity: { increment: item.quantity },
+            },
+          });
+        }
+      }
+
+      // If moving FROM Cancelled/Returned back to an active status -> DEDUCT inventory again
+      if (!isCancellingOrReturning && wasCancelledOrReturned) {
+        for (const item of order.items) {
+          await tx.inventory.update({
+            where: { productId: item.productId },
+            data: {
+              quantity: { decrement: item.quantity },
+            },
+          });
+        }
+      }
+
+      // Update order status
+      await tx.order.update({
+        where: { id: targetOrderId },
+        data: { orderStatus: statusToSet },
+      });
+
+      // Create status history record
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: targetOrderId,
+          status: statusToSet,
+        },
+      });
     });
 
     revalidatePath("/account");
     revalidatePath("/admin-controls/orders");
+    revalidatePath("/admin-controls/inventory");
 
     return { success: true };
 
   } catch (error) {
     console.error("Failed to update order status:", error);
-    return { success: false, error: "Failed to update order status" };
+    return { success: false, error: error.message || "Failed to update order status" };
   }
 }
 

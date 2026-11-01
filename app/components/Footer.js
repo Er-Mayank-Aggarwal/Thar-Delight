@@ -17,7 +17,8 @@ const footerLinks = {
     { name: "Contact", href: "/contact" },
   ],
   support: [
-    { name: "Shipping & Returns", href: "/shipping" },
+    { name: "Shipping Policy", href: "/shipping" },
+    { name: "Returns & Refunds", href: "/refund-policy" },
     { name: "Terms & Conditions", href: "/terms" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Track Order", href: "/track" },
@@ -174,6 +175,10 @@ export default function Footer() {
               <li className="flex items-center gap-3 text-sm text-white/50">
                 <Mail size={16} className="text-brand-gold flex-shrink-0" />
                 <a href="mailto:thardelight@gmail.com" className="hover:text-brand-gold transition-colors">thardelight@gmail.com</a>
+              </li>
+              <li className="pt-2 border-t border-white/10 text-xs text-white/50">
+                <span className="font-semibold text-brand-gold uppercase tracking-wider block mb-0.5">FSSAI Lic. No:</span>
+                <span>22223074000452</span>
               </li>
             </ul>
           </div>

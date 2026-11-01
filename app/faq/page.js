@@ -14,19 +14,15 @@ const faqData = [
   },
   {
     question: "What does 'Farali' mean?",
-    answer: "'Farali' refers to food items prepared specifically for religious fasting (vrat) in India, where standard grains like wheat and rice are restricted. Our Farali cookies are crafted from fasting-compliant ingredients like water chestnut flour (singhara), amaranth flour (rajgira), pure cow ghee, and dry fruits.",
-  },
-  {
-    question: "How should I care for the handcrafted Acacia Wood Plate?",
-    answer: "To preserve the natural wood grain and prevent cracking, hand-wash the plate with warm soapy water immediately after use. Do not soak it in water or put it in a dishwasher. Occasionally rub a small amount of food-safe mineral oil or coconut oil over the surface using a soft cloth to maintain its shine.",
+    answer: "'Farali' refers to food items prepared specifically for religious fasting (vrat) in India, where standard grains like wheat and rice are restricted. Our Farali cookies and snacks are crafted from fasting-compliant ingredients like amaranth flour (rajgira), barnyard millet (sama), pure cow ghee, and dry fruits.",
   },
   {
     question: "Do you use palm oil or artificial preservatives in your snacks?",
-    answer: "Absolutely not. We are committed to pure, clean food. We do not use palm oil, high-fructose corn syrup, or artificial preservatives. We prepare our treats traditionally using cow ghee or cold-pressed oils, ensuring maximum health benefits.",
+    answer: "Absolutely not. We are committed to pure, clean food. We do not use palm oil, high-fructose corn syrup, or artificial preservatives. We prepare our treats traditionally using pure cow ghee or cold-pressed oils, ensuring maximum health benefits.",
   },
   {
     question: "What is your shipping policy and delivery timeline?",
-    answer: "We offer pan-India shipping. Shipping is FREE for all orders above ₹500; otherwise, a flat shipping charge of ₹50 applies. Orders are typically processed within 24 hours and delivered within 3-5 business days depending on your location.",
+    answer: "We offer pan-India shipping. Shipping is FREE for all orders above ₹1,000; otherwise, a flat shipping charge of ₹100 applies. Orders are typically processed within 24 to 48 hours and delivered within 3-5 business days depending on your location.",
   },
   {
     question: "What is the shelf life of the cookies?",
