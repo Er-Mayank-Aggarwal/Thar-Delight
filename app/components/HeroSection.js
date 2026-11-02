@@ -236,7 +236,7 @@ export default function HeroSection({ initialProducts = [] }) {
                     }`}
                   >
                     <Image
-                      src={product.image}
+                      src={product.image || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg"}
                       alt={product.name}
                       fill
                       className={`object-cover transition-transform duration-[5000ms] ease-out ${
@@ -244,6 +244,10 @@ export default function HeroSection({ initialProducts = [] }) {
                       }`}
                       sizes="1000px"
                       priority={idx === 0}
+                      onError={(e) => {
+                        e.currentTarget.srcset = "";
+                        e.currentTarget.src = "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+                      }}
                     />
                     {/* Subtle dark gradient overlay to blend into background */}
                     <div className="absolute inset-0 bg-gradient-to-r from-brand-brown/40 via-transparent to-transparent mix-blend-multiply z-10" />
@@ -293,11 +297,15 @@ export default function HeroSection({ initialProducts = [] }) {
                       aria-label={`Select ${product.name}`}
                     >
                       <Image
-                        src={product.image}
+                        src={product.image || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg"}
                         alt={product.name}
                         fill
                         className="object-cover"
                         sizes="100px"
+                        onError={(e) => {
+                          e.currentTarget.srcset = "";
+                          e.currentTarget.src = "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+                        }}
                       />
                     </button>
 

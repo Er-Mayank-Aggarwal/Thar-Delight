@@ -105,6 +105,7 @@ export default function ProductDetailClient({ product, relatedProducts, recommen
                 className="object-cover transition-transform duration-700 hover:scale-105"
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 priority
+                onError={() => setSelectedImage("https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg")}
               />
               {product.badge && (
                 <span className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-brand-gold text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider rounded-full shadow-md z-10 animate-pulse">

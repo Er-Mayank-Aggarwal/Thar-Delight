@@ -76,6 +76,10 @@ export default function CartDrawer({ isOpen, onClose }) {
                       fill
                       sizes="64px"
                       className="object-cover"
+                      onError={(e) => {
+                        e.currentTarget.srcset = "";
+                        e.currentTarget.src = "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+                      }}
                     />
                 </div>
                 

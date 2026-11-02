@@ -58,7 +58,8 @@ export default function ProductCard({ product }) {
     : null;
 
 
-  const imageUrl = product.image || product.images?.[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+  const defaultImageUrl = product.image || product.images?.[0]?.url || "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg";
+  const [imgSrc, setImgSrc] = useState(defaultImageUrl);
 
   const reviewCount = Array.isArray(product.reviews) ? product.reviews.length : (product.reviews || product.reviewCount || 0);
   const calculatedRating = Array.isArray(product.reviews) && product.reviews.length > 0
@@ -76,11 +77,12 @@ export default function ProductCard({ product }) {
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden bg-brand-cream">
         <Image
-          src={imageUrl}
+          src={imgSrc}
           alt={mainTitle}
           fill
           className="object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          onError={() => setImgSrc("https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395003/thar-delight/placeholder.jpg")}
         />
 
         {/* Overlay on hover */}
