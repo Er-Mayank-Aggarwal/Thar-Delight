@@ -23,7 +23,7 @@ export default async function FeaturedProducts() {
 
         {/* Product Carousel / Grid */}
         <div className="flex sm:flex-wrap overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory sm:snap-none justify-start sm:justify-center gap-4 sm:gap-8 pb-4 sm:pb-0 custom-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
-          {featured.map((product) => (
+          {(featured || []).map((product) => (
             <div key={product.id} className="flex-shrink-0 w-[80vw] max-w-[280px] sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)] snap-start">
               <ProductCard product={product} />
             </div>

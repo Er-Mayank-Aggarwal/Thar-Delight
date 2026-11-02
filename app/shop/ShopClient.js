@@ -6,7 +6,7 @@ import Image from "next/image";
 import ProductCard from "../components/ProductCard";
 import { Filter, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 
-export default function ShopClient({ initialProducts, categories }) {
+export default function ShopClient({ initialProducts = [], categories = [] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialCategory = searchParams.get("category") || "all";
@@ -14,7 +14,7 @@ export default function ShopClient({ initialProducts, categories }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState(1200);
-  const [filteredProducts, setFilteredProducts] = useState(initialProducts);
+  const [filteredProducts, setFilteredProducts] = useState(initialProducts || []);
 
   // Sync state with query parameters
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function ShopClient({ initialProducts, categories }) {
 
   // Handle filtering and sorting
   useEffect(() => {
-    if (initialProducts.length === 0) return;
+    if (!initialProducts || initialProducts.length === 0) return;
     let result = [...initialProducts];
 
     // Filter by Search Query

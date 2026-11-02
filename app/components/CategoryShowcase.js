@@ -14,7 +14,7 @@ const categoryStyleMap = {
 export default async function CategoryShowcase() {
   const dbCategories = await getCategoriesWithProductCount();
 
-  const categories = dbCategories.map((c) => {
+  const categories = (dbCategories || []).map((c) => {
     const style = categoryStyleMap[c.slug] || {
       color: "from-amber-700 to-amber-900",
       image: "https://res.cloudinary.com/sjl1rfvu/image/upload/v1785395004/thar-delight/categories/millet-cookies.jpg",

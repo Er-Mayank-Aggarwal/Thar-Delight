@@ -51,3 +51,4 @@ describe("Infrastructure: Rate Limiter Mechanism", () => {
     assert.equal(afterExpiry.allowed, true);
   });
 });
+
