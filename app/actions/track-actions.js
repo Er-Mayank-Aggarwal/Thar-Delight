@@ -1,10 +1,28 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { trackLimiter } from "@/lib/rateLimit";
 
 export async function trackOrderPublic(identifier) {
-  if (!identifier || typeof identifier !== "string" || identifier.trim().length < 4) {
-    return { success: false, error: "Please enter a valid Order ID (e.g. cm... or 8 characters) or 10-digit Phone Number." };
+  if (!identifier || typeof identifier !== "string" || identifier.trim().length < 8) {
+    return { success: false, error: "Please enter a valid Order ID (at least 8 characters) or 10-digit Phone Number." };
+  }
+
+  // Rate limiting by client IP
+  try {
+    const headerList = await headers();
+    const clientIp =
+      headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      headerList.get("x-real-ip") ||
+      "anonymous-client";
+
+    const rl = trackLimiter.check(clientIp);
+    if (!rl.allowed) {
+      return { success: false, error: "Too many tracking requests. Please wait a minute and try again." };
+    }
+  } catch {
+    // If headers cannot be resolved, continue
   }
 
   const clean = identifier.trim().replace(/^#/, "");

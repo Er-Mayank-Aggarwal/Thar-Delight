@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { reviewSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 export async function submitReview(data) {
@@ -11,12 +12,13 @@ export async function submitReview(data) {
       return { success: false, error: "Please log in to submit a review" };
     }
 
-    const { productId, rating, comment } = data;
-    const userId = session.userId;
-
-    if (!rating || rating < 1 || rating > 5) {
-      return { success: false, error: "Rating must be between 1 and 5" };
+    const parsed = reviewSchema.safeParse(data);
+    if (!parsed.success) {
+      return { success: false, error: parsed.error.errors[0]?.message || "Invalid review data" };
     }
+
+    const { productId, rating, comment } = parsed.data;
+    const userId = session.userId;
     
     // Check if user actually bought the product
     const hasPurchased = await prisma.order.findFirst({

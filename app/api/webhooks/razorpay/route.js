@@ -30,7 +30,16 @@ export async function POST(request) {
           where: { id: orderId },
         });
 
+        // Verify order exists, has not yet been marked paid, and amount matches
+        const paidAmount = paymentEntity?.amount;
+        const expectedPaise = Math.round((order?.total || 0) * 100);
+
         if (order && order.paymentStatus !== "SUCCESS") {
+          if (paidAmount && paidAmount < expectedPaise) {
+            console.error(`Amount mismatch for order ${orderId}: expected ${expectedPaise}, got ${paidAmount}`);
+            return NextResponse.json({ error: "Paid amount less than order total" }, { status: 400 });
+          }
+
           await prisma.$transaction(async (tx) => {
             await tx.order.update({
               where: { id: orderId },

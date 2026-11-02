@@ -221,6 +221,12 @@ export async function placeOrder(formData) {
           },
         });
 
+        // Store the Razorpay order ID in the Payment record to bind the order cryptographically
+        await prisma.payment.updateMany({
+          where: { orderId },
+          data: { transactionId: razorpayOrder.id },
+        });
+
         return {
           success: true,
           orderId,
@@ -257,6 +263,35 @@ export async function verifyPayment({ orderId, razorpayOrderId, razorpayPaymentI
       return { success: false, error: "Authentication required" };
     }
 
+    if (!orderId || !razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return { success: false, error: "Invalid payment verification parameters" };
+    }
+
+    // Verify order exists and belongs to current user
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { payment: true },
+    });
+
+    if (!order) {
+      return { success: false, error: "Order not found" };
+    }
+
+    const isAdminOrOwner = session.role === "ADMIN" || session.role === "OWNER";
+    if (order.userId !== session.userId && !isAdminOrOwner) {
+      return { success: false, error: "Unauthorized access to order" };
+    }
+
+    // Idempotency: already marked paid (e.g. via webhook)
+    if (order.paymentStatus === "SUCCESS") {
+      return { success: true };
+    }
+
+    // Bind verification: ensure razorpayOrderId matches the one created for this order
+    if (order.payment?.transactionId && order.payment.transactionId !== razorpayOrderId) {
+      return { success: false, error: "Razorpay order ID mismatch" };
+    }
+
     const isValid = verifyPaymentSignature({
       razorpayOrderId,
       razorpayPaymentId,
@@ -285,7 +320,7 @@ export async function verifyPayment({ orderId, razorpayOrderId, razorpayPaymentI
         create: {
           orderId,
           paymentMethod: "ONLINE",
-          amount: 0,
+          amount: order.total,
           status: "SUCCESS",
           transactionId: razorpayPaymentId,
         },
